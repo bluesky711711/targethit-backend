@@ -609,10 +609,11 @@ module.exports = (express) => {
 
 				// Connect to MySQL DB
 
-				query = 'SELECT tbl_participants.*, tbl_teams.TeamName as team, tbl_leagues.LeagueName as league FROM tbl_participants left join tbl_teams on tbl_teams.id = tbl_participants.team_id left join tbl_leagues on tbl_leagues.id = tbl_participants.league_id';
+				query = 'SELECT tbl_participants.*, tbl_teams.TeamName as team, tbl_leagues.LeagueName as league FROM tbl_participants left join tbl_teams on tbl_teams.id = tbl_participants.team_id\
+				left join tbl_leagues on tbl_leagues.id = tbl_participants.league_id right join tbl_event_part on tbl_event_part.part_id = tbl_participants.id';
 				query_where = '';
 				if (data.event_id != ''){
-					query_where = ' WHERE tbl_participants.event_id = ' + data.event_id;
+					query_where = ' WHERE tbl_event_part.event_id = ' + data.event_id;
 				}
 				query = query + query_where;
 				console.log(query);
