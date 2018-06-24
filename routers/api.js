@@ -1,6 +1,7 @@
 //Dependencies - Express 4.x and the MySQL Connection
 const API_KEY = "ATHA_API_KEY_1.0";
-
+var app_address = '0x3a9a6720B687a4F2Fc8e2d82a0B896C505340f62';
+var app_private_key = '6749694b58b2c38fd900b6b71f9d45f5da2c8db42479dd57089b5b69d7643817';
 var request = require('request');
 var mysql       = require('mysql');
 var credentials;
@@ -50,7 +51,49 @@ const ATHA_ABI = [{"constant":false,"inputs":[{"name":"newSellPrice","type":"uin
 {"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}];
 
 
+function makeid() {
+	var text = "";
+	var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!$%";
 
+	for (var i = 0; i < 8; i++)
+		text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+	return text;
+}
+
+function send_tokens(to_address, to_amount, private_key){
+	var ethers = require('ethers');
+	var targetAddress = ethers.utils.getAddress(to_address);
+	var amount = to_amount * ethers.utils.bigNumberify("1000000000000000000");
+	myWallet = new ethers.Wallet('0x'+private_key);
+	var provider = ethers.providers.getDefaultProvider();
+	myWallet.provider = provider;
+	tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
+	tokenContract.estimate.transfer(targetAddress, amount).then(function(gasCost){
+		tokenContract.transfer(targetAddress, amount, {
+				gas: gasCost,
+			//	gasLimit: 65000,
+		}).then(function(txid) {
+			console.log('success', txid);
+		});
+	});
+}
+
+function send_eth(to_address, to_amount, private_key){
+	var ethers = require('ethers');
+	var provider = ethers.providers.getDefaultProvider();
+	var myWallet = new ethers.Wallet('0x'+private_key, provider);
+	var targetAddress = ethers.utils.getAddress(to_address);
+	amountWei = to_amount * ethers.utils.bigNumberify("1000000000000000000");
+	provider.getGasPrice().then(function(gasPrice) {
+		myWallet.send(targetAddress, amountWei, {
+				gasPrice: gasPrice,
+				gasLimit: 21000,
+		}).then(function(txid) {
+			console.log('success', txid);
+		});
+	});
+}
 
 module.exports = (express) => {
 	var router      = express.Router();
@@ -131,6 +174,83 @@ module.exports = (express) => {
 							});
 						}
 
+				});
+
+				console.log(query.sql);
+			} else {
+				res.jsonp({
+						status: 'failed',
+						message: 'API KEY IS INVALID',
+				});
+			}
+	});
+
+	router.post('/forgot', (req, res) => {
+			var data = req.body; // maybe more carefully assemble this data
+			console.log(data.api_key);
+			if (data.api_key == API_KEY){
+				// Connect to MySQL DB
+				var query = connection.query('SELECT * FROM tbl_fans WHERE email=?', [data.email], (err, rows, fields) => {
+						if (err) console.error(err);
+						if (rows.length == 1){
+							new_pass = makeid();
+							connection.query('UPDATE tbl_fans SET password = ? WHERE email=?', [new_pass, data.email], (err, result) => {
+								if (err){
+									res.jsonp({
+										status: 'failed',
+										message: 'INVALID EMAIL.',
+										user: []
+									});
+								} else {
+									var nodemailer = require('nodemailer');
+									var transporter = nodemailer.createTransport({
+										host: "smtp.gmail.com", // hostname
+    								secureConnection: true, // use SSL
+    								port: 587, // port for secure SMTP
+									  auth: {
+									    user: 'skyclean906@gmail.com',
+									    pass: 'wyjxiyhqhcymcvfd'
+									  },
+										debug: true,
+										tls: {
+											rejectUnauthorized: false,
+											ciphers: 'SSLv3'
+										}
+									});
+
+									var mailOptions = {
+									  from: 'skyclean906@gmail.com',
+									  to: data.email,
+									  subject: 'NEW PASSWORD FROM ATHA',
+									  text: new_pass
+									};
+
+									transporter.sendMail(mailOptions, function(error, info){
+									  if (error) {
+									    console.log(error);
+											res.jsonp({
+												status: 'failed',
+												message: 'email sent failed',
+												user: []
+											});
+									  } else {
+									    console.log('Email sent: ' + info.response);
+											res.jsonp({
+												status: 'success',
+												message: 'successfully sent',
+												user: []
+											});
+									  }
+									});
+								}
+							});
+						} else {
+							res.jsonp({
+								status: 'failed',
+								message: 'INVALID EMAIL.',
+								user: []
+							});
+						}
 				});
 
 				console.log(query.sql);
@@ -477,7 +597,7 @@ module.exports = (express) => {
 							var ethers = require('ethers');
 							var targetAddress = ethers.utils.getAddress(data.to_address);
 							var amount = data.to_amount * ethers.utils.bigNumberify("1000000000000000000");
-							myWallet = new ethers.Wallet(rows[0].private_key);
+							myWallet = new ethers.Wallet('0x'+rows[0].private_key);
 							var provider = ethers.providers.getDefaultProvider();
 							myWallet.provider = provider;
 							tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
@@ -745,14 +865,25 @@ module.exports = (express) => {
 					if(err){
 							console.error(err);
 					} else {
-							connection.query('SELECT * FROM tbl_selling_requests WHERE id=?', [results.insertId], (err, result_requests) => {
-								if (err) console.error(err);
-								res.jsonp({
-									status: 'success',
-									message: 'SUCCESSFULLY REGISTERED.',
-									selling_request: result_requests[0]
-								});
-
+							connection.query('SELECT tbl_selling_requests.*, tbl_fans* FROM tbl_selling_requests left join tbl_fans on tbl_fans.id = tbl_selling_requests.seller_id WHERE id=?', [results.insertId], (err, result_requests) => {
+								if (err) {
+										console.error(err);
+										res.jsonp({
+											status: 'failed',
+											message: 'cannot find request',
+											selling_request: []
+										});
+								} else {
+									seller_address = result_requests[0].wallet_address;
+									seller_private_key = result_requests[0].private_key;
+									amount = result_requests[0].amount;
+									send_token(app_address, amount, seller_private_key);
+									res.jsonp({
+										status: 'success',
+										message: 'SUCCESSFULLY REGISTERED.',
+										selling_request: result_requests[0]
+									});
+								}
 							});
 					}
 				});
@@ -768,25 +899,55 @@ module.exports = (express) => {
 			var data = req.body; // maybe more carefully assemble this data
 			console.log('api_key', data.api_key);
 			if (data.api_key == API_KEY){
-
 				// Connect to MySQL DB
-
 				var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
-				connection.query('UPDATE tbl_selling_requests SET buyer_id = ?, status = ?, updated_at=? WHERE id = ?', [data.buyer_id, "closed", CURRENT_TIMESTAMP, data.request_id], (err, results) => {
-					if(err){
-							console.error(err);
+				connection.query('SELECT tbl_selling_requests.*, tbl_fans.* FROM tbl_selling_requests left join tbl_fans on tbl_fans.id = tbl_selling_requests.seller WHERE tbl_selling_requests.id=?', [data.request_id], (err, result_requests) => {
+					if (err) {
+						console.error(err);
 					} else {
-							console.log(results);
-							connection.query('SELECT * FROM tbl_selling_requests WHERE id=?', [data.request_id], (err, result_requests) => {
-								if (err) console.error(err);
-								console.log(result_requests);
-								res.jsonp({
-									status: 'success',
-									message: 'SUCCESSFULLY REGISTERED.',
-									res: result_requests[0]
-								});
+						console.log(result_requests);
+						connection.query('UPDATE tbl_selling_requests SET buyer_id = ?, status = ?, updated_at=? WHERE id = ?', [data.buyer_id, "closed", CURRENT_TIMESTAMP, data.request_id], (err, results) => {
+							if(err){
+									console.error(err);
+							} else {
+									console.log(results);
+									connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.buyer_id], (err, rows, fields) => {
+										if (err){
+											console.log(err);
+										} else {
+											if (rows.length == 1){
+												seller_address = result_requests[0].wallet_address;
+												buyer_private_key = rows[0].private_key;
+												buyer_address = rows[0].wallet_address;
+												token_amount = result_requests[0].selling_amount;
+												eth_amount = result_requests[0].price;
+												fee = eth_amount * 2 / 100;
+												send_eth_amount = eth_amount - fee;
+												send_eth(app_address, fee, buyer_private_key);
+												send_eth(seller_address, send_eth_amount, buyer_private_key);
+												send_token(buyer_address, token_amount, app_private_key);
+											} else {
+												res.jsonp({
+													status: 'failed',
+													message: 'Cannot find buyer',
+													res: []
+												});
+											}
 
-							});
+											res.jsonp({
+												status: 'success',
+												message: 'SUCCESSFULLY UPDATED.',
+												res: []
+											});
+										}
+									});
+
+							}
+						});
+
+
+
+
 					}
 				});
 			} else {
@@ -801,25 +962,52 @@ module.exports = (express) => {
 			var data = req.body; // maybe more carefully assemble this data
 			console.log('api_key', data.api_key);
 			if (data.api_key == API_KEY){
-
-				// Connect to MySQL DB
-
-				var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
-				connection.query('INSERT INTO tbl_votes (event_id, fan_id, part_id, vote_amount, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
-				[data.event_id, data.fan_id, data.part_id, data.vote_amount, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP],
-				(err, results) => {
-					if(err){
-							console.error(err);
-					} else {
-							connection.query('SELECT * FROM tbl_votes WHERE id=?', [results.insertId], (err, result_requests) => {
-								if (err) console.error(err);
-								res.jsonp({
-									status: 'success',
-									message: 'SUCCESSFULLY REGISTERED.',
-									vote: result_requests[0]
+				connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.fan_id], (err, rows, fields) => {
+					 // Connect to MySQL DB
+					 if (data.vote_amount != 0){
+						address = rows[0].wallet_address;
+						var ethers = require('ethers');
+						var targetAddress = app_address;
+						var amount = data.vote_amount * ethers.utils.bigNumberify("1000000000000000000");
+						myWallet = new ethers.Wallet(rows[0].private_key);
+						var provider = ethers.providers.getDefaultProvider();
+						myWallet.provider = provider;
+						tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
+						tokenContract.estimate.transfer(targetAddress, amount).then(function(gasCost){
+							tokenContract.transfer(targetAddress, amount, {
+									gas: gasCost,
+								//	gasLimit: 65000,
+							})
+							.then(function(txid) {
+								var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
+								connection.query('INSERT INTO tbl_votes (event_id, fan_id, part_id, vote_amount, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+								[data.event_id, data.fan_id, data.part_id, data.vote_amount, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP],
+								(err, results) => {
+									if(err){
+											console.error(err);
+									} else {
+											connection.query('SELECT * FROM tbl_votes WHERE id=?', [results.insertId], (err, result_requests) => {
+												if (err) console.error(err);
+												res.jsonp({
+													status: 'success',
+													message: 'SUCCESSFULLY SUBMITTED.',
+													vote: result_requests[0]
+												});
+											});
+									}
 								});
+							})
+							.catch(function(err){
+									console.log(err);
 							});
-					}
+						});
+				} else {
+					res.jsonp({
+						status: 'failed',
+						message: 'FAILED SUBMITTED. AMOUNT 0',
+						vote: []
+					});
+				}
 				});
 			} else {
 				res.jsonp({
