@@ -859,13 +859,11 @@ module.exports = (express) => {
 				// Connect to MySQL DB
 
 				var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
-				connection.query('INSERT INTO tbl_selling_requests (selling_amount, seller_id, buyer_id, price, status, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-				[data.selling_amount, data.seller_id, data.buyer_id, data.price, "open", CURRENT_TIMESTAMP],
-				(err, results) => {
+				connection.query('INSERT INTO tbl_selling_requests (selling_amount, seller_id, price, status, created_at) VALUES (?, ?, ?, ?, ?)', [data.selling_amount, data.seller_id, data.price, "open", CURRENT_TIMESTAMP], (err, results) => {
 					if(err){
 							console.error(err);
 					} else {
-							connection.query('SELECT tbl_selling_requests.*, tbl_fans* FROM tbl_selling_requests left join tbl_fans on tbl_fans.id = tbl_selling_requests.seller_id WHERE id=?', [results.insertId], (err, result_requests) => {
+							connection.query('SELECT tbl_selling_requests.*, tbl_fans.* FROM tbl_selling_requests left join tbl_fans on tbl_fans.id = tbl_selling_requests.seller_id WHERE tbl_selling_requests.id=?', [results.insertId], (err, result_requests) => {
 								if (err) {
 										console.error(err);
 										res.jsonp({
@@ -874,10 +872,10 @@ module.exports = (express) => {
 											selling_request: []
 										});
 								} else {
-									seller_address = result_requests[0].wallet_address;
-									seller_private_key = result_requests[0].private_key;
-									amount = result_requests[0].amount;
-									send_token(app_address, amount, seller_private_key);
+									// seller_address = result_requests[0].wallet_address;
+									// seller_private_key = result_requests[0].private_key;
+									// amount = result_requests[0].amount;
+									// send_token(app_address, amount, seller_private_key);
 									res.jsonp({
 										status: 'success',
 										message: 'SUCCESSFULLY REGISTERED.',
@@ -901,12 +899,12 @@ module.exports = (express) => {
 			if (data.api_key == API_KEY){
 				// Connect to MySQL DB
 				var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
-				connection.query('SELECT tbl_selling_requests.*, tbl_fans.* FROM tbl_selling_requests left join tbl_fans on tbl_fans.id = tbl_selling_requests.seller WHERE tbl_selling_requests.id=?', [data.request_id], (err, result_requests) => {
+				connection.query('SELECT tbl_selling_requests.*, tbl_fans.* FROM tbl_selling_requests left join tbl_fans on tbl_fans.id = tbl_selling_requests.seller_id WHERE tbl_selling_requests.id=?', [data.request_id], (err, result_requests) => {
 					if (err) {
 						console.error(err);
 					} else {
 						console.log(result_requests);
-						connection.query('UPDATE tbl_selling_requests SET buyer_id = ?, status = ?, updated_at=? WHERE id = ?', [data.buyer_id, "closed", CURRENT_TIMESTAMP, data.request_id], (err, results) => {
+						connection.query('UPDATE tbl_selling_requests SET buyer_id = ?, status = ?, updated_at = ? WHERE id = ?', [data.buyer_id, "closed", CURRENT_TIMESTAMP, data.request_id], (err, results) => {
 							if(err){
 									console.error(err);
 							} else {
@@ -916,16 +914,20 @@ module.exports = (express) => {
 											console.log(err);
 										} else {
 											if (rows.length == 1){
-												seller_address = result_requests[0].wallet_address;
-												buyer_private_key = rows[0].private_key;
-												buyer_address = rows[0].wallet_address;
-												token_amount = result_requests[0].selling_amount;
-												eth_amount = result_requests[0].price;
-												fee = eth_amount * 2 / 100;
-												send_eth_amount = eth_amount - fee;
-												send_eth(app_address, fee, buyer_private_key);
-												send_eth(seller_address, send_eth_amount, buyer_private_key);
-												send_token(buyer_address, token_amount, app_private_key);
+												// seller_address = result_requests[0].wallet_address;
+												// buyer_private_key = rows[0].private_key;
+												// buyer_address = rows[0].wallet_address;
+												// token_amount = result_requests[0].selling_amount;
+												// eth_amount = result_requests[0].price;
+												// fee = eth_amount * 2 / 100;
+												// send_eth(app_address, fee, buyer_private_key);
+												// send_eth(seller_address, eth_amount, buyer_private_key);
+												// send_token(buyer_address, token_amount, app_private_key);
+												res.jsonp({
+													status: 'success',
+													message: 'updated',
+													res: []
+												});
 											} else {
 												res.jsonp({
 													status: 'failed',
@@ -944,10 +946,6 @@ module.exports = (express) => {
 
 							}
 						});
-
-
-
-
 					}
 				});
 			} else {
@@ -1016,6 +1014,5 @@ module.exports = (express) => {
 				});
 			}
 	});
-
 	return router;
 };
