@@ -202,7 +202,7 @@ module.exports = (express) => {
 										user: []
 									});
 								} else {
-									// var nodemailer = require('nodemailer');
+									var nodemailer = require('nodemailer');
 									// var transporter = nodemailer.createTransport({
 									// 	host: "smtp.gmail.com", // hostname
     							// 	secureConnection: true, // use SSL
