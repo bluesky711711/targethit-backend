@@ -202,28 +202,27 @@ module.exports = (express) => {
 										user: []
 									});
 								} else {
-									var nodemailer = require('nodemailer');
+									// var nodemailer = require('nodemailer');
+									// var transporter = nodemailer.createTransport({
+									// 	host: "smtp.gmail.com", // hostname
+    							// 	secureConnection: true, // use SSL
+    							// 	port: 25, // port for secure SMTP
+									//   auth: {
+									//     user: 'athleticoinapps@gmail.com',
+									//     pass: 'pass4ATHLETICOIN'
+									//   },
+									// 	debug: true,
+									// });
 									var transporter = nodemailer.createTransport({
-										host: "smtp.gmail.com", // hostname
+										host: "bsemailmarketing.smtp.com", // hostname
     								secureConnection: true, // use SSL
-    								port: 25, // port for secure SMTP
+    								port: 25025, // port for secure SMTP
 									  auth: {
-									    user: 'athleticoinapps@gmail.com',
-									    pass: 'pass4ATHLETICOIN'
+									    user: 'platben',
+									    pass: 'ZdpDs95R'
 									  },
 										debug: true,
 									});
-									// var transporter = nodemailer.createTransport({
-									// 	host: "bsemailmarketing.smtp.com", // hostname
-    							// 	secureConnection: true, // use SSL
-    							// 	port: 25025, // port for secure SMTP
-									//   auth: {
-									//     user: 'platben',
-									//     pass: 'ZdpDs95R'
-									//   },
-									// 	debug: true,
-									//
-									// });
 									var mailOptions = {
 									  from: 'athleticoinapps@gmail.com',
 									  to: data.email,
