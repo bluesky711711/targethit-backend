@@ -206,20 +206,26 @@ module.exports = (express) => {
 									var transporter = nodemailer.createTransport({
 										host: "smtp.gmail.com", // hostname
     								secureConnection: true, // use SSL
-    								port: 587, // port for secure SMTP
+    								port: 25, // port for secure SMTP
 									  auth: {
-									    user: 'skyclean906@gmail.com',
-									    pass: 'wyjxiyhqhcymcvfd'
+									    user: 'athleticoinapps@gmail.com',
+									    pass: 'pass4ATHLETICOIN'
 									  },
 										debug: true,
-										tls: {
-											rejectUnauthorized: false,
-											ciphers: 'SSLv3'
-										}
 									});
-
+									// var transporter = nodemailer.createTransport({
+									// 	host: "bsemailmarketing.smtp.com", // hostname
+    							// 	secureConnection: true, // use SSL
+    							// 	port: 25025, // port for secure SMTP
+									//   auth: {
+									//     user: 'platben',
+									//     pass: 'ZdpDs95R'
+									//   },
+									// 	debug: true,
+									//
+									// });
 									var mailOptions = {
-									  from: 'skyclean906@gmail.com',
+									  from: 'athleticoinapps@gmail.com',
 									  to: data.email,
 									  subject: 'NEW PASSWORD FROM ATHA',
 									  text: new_pass
@@ -855,9 +861,7 @@ module.exports = (express) => {
 			var data = req.body; // maybe more carefully assemble this data
 			console.log('api_key', data.api_key);
 			if (data.api_key == API_KEY){
-
 				// Connect to MySQL DB
-
 				var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
 				connection.query('INSERT INTO tbl_selling_requests (selling_amount, seller_id, price, status, created_at) VALUES (?, ?, ?, ?, ?)', [data.selling_amount, data.seller_id, data.price, "open", CURRENT_TIMESTAMP], (err, results) => {
 					if(err){
@@ -904,48 +908,67 @@ module.exports = (express) => {
 						console.error(err);
 					} else {
 						console.log(result_requests);
-						connection.query('UPDATE tbl_selling_requests SET buyer_id = ?, status = ?, updated_at = ? WHERE id = ?', [data.buyer_id, "closed", CURRENT_TIMESTAMP, data.request_id], (err, results) => {
-							if(err){
-									console.error(err);
-							} else {
-									console.log(results);
-									connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.buyer_id], (err, rows, fields) => {
-										if (err){
-											console.log(err);
+						address = result_requests[0].wallet_address;
+						var ethers = require('ethers');
+						var providers = ethers.providers;
+						var provider = new providers.getDefaultProvider(providers.networks.mainnet);
+						tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, provider);
+						var callPromise = tokenContract.functions.balanceOf(address);
+						callPromise.then(function(result_bal) {
+								var trueBal = result_bal.toString(10);
+								var n = trueBal * 0.000000000000000001;
+								var atyxValue = n.toLocaleString(
+										undefined, // use a string like 'en-US' to override browser locale
+										{
+												minimumFractionDigits: 4
+										}
+								);
+								if (n < result_requests[0].selling_amount){
+									res.jsonp({
+										status: 'failed',
+										message: 'Try it later or another request!',
+										res:[]
+									});
+								} else {
+									connection.query('UPDATE tbl_selling_requests SET buyer_id = ?, status = ?, updated_at = ? WHERE id = ?', [data.buyer_id, "closed", CURRENT_TIMESTAMP, data.request_id], (err, results) => {
+										if(err){
+												console.error(err);
 										} else {
-											if (rows.length == 1){
-												// seller_address = result_requests[0].wallet_address;
-												// buyer_private_key = rows[0].private_key;
-												// buyer_address = rows[0].wallet_address;
-												// token_amount = result_requests[0].selling_amount;
-												// eth_amount = result_requests[0].price;
-												// fee = eth_amount * 2 / 100;
-												// send_eth(app_address, fee, buyer_private_key);
-												// send_eth(seller_address, eth_amount, buyer_private_key);
-												// send_token(buyer_address, token_amount, app_private_key);
-												res.jsonp({
-													status: 'success',
-													message: 'updated',
-													res: []
+												console.log(results);
+												connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.buyer_id], (err, rows, fields) => {
+													if (err){
+														console.log(err);
+													} else {
+														if (rows.length == 1){
+															seller_address = result_requests[0].wallet_address;
+															seller_private_key = result_requests[0].wallet_address;
+															buyer_private_key = rows[0].private_key;
+															buyer_address = rows[0].wallet_address;
+															token_amount = result_requests[0].selling_amount;
+															eth_amount = result_requests[0].price;
+															fee = eth_amount * 2 / 100;
+															send_eth(app_address, fee, buyer_private_key);
+															send_eth(seller_address, eth_amount, buyer_private_key);
+															send_token(buyer_address, token_amount, seller_private_key);
+															res.jsonp({
+																status: 'success',
+																message: 'updated',
+																res: []
+															});
+														} else {
+															res.jsonp({
+																status: 'failed',
+																message: 'Cannot find buyer',
+																res: []
+															});
+														}
+													}
 												});
-											} else {
-												res.jsonp({
-													status: 'failed',
-													message: 'Cannot find buyer',
-													res: []
-												});
-											}
-
-											res.jsonp({
-												status: 'success',
-												message: 'SUCCESSFULLY UPDATED.',
-												res: []
-											});
 										}
 									});
-
-							}
+								}
 						});
+
 					}
 				});
 			} else {
