@@ -1198,17 +1198,19 @@ module.exports = (express) => {
 			console.log('api_key', data.api_key);
 			if (data.api_key == API_KEY){
 				// Connect to MySQL DB
-				connection.query('SELECT * FROM mobile_redeems WHERE redeem_code=?', [data.redeem_code], (err, result_requests) => {
+				connection.query('SELECT * FROM mobile_redeems WHERE redeem_code=? AND status=?', [data.redeem_code, "opened"], (err, result_requests) => {
 					if (err) {
 						console.error(err);
 						return;
 					}
 					var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
-					connection.query('UPDATE mobile_redeems SET received_by = ?, updated_at=? WHERE id = ?', [data.user_id, CURRENT_TIMESTAMP, result_requests[0].id], (err, results) => {
+					connection.query('UPDATE mobile_redeems SET received_by = ?, status = ?, updated_at = ? WHERE id = ?', [data.user_id, 'closed', CURRENT_TIMESTAMP, result_requests[0].id], (err, results) => {
 						if(err){
 								console.error(err);
 						} else {
 								console.log(results);
+								result_requests[0].received_by = data.user_id;
+								result_requests[0].status = 'closed';
 								res.jsonp({
 									status: 'success',
 									message: 'SUCCESSFULLY REGISTERED.',
