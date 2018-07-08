@@ -51,6 +51,41 @@ const ATHA_ABI = [{"constant":false,"inputs":[{"name":"newSellPrice","type":"uin
 {"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}];
 
 
+var ATHA_CONTRACT_ADDRESS_TEST = '0x9e26750041f442f13748b181596a88E72338Cd90';
+const ATHA_ABI_TEST = [{"constant":false,"inputs":[{"name":"newSellPrice","type":"uint256"},{"name":"newBuyPrice","type":"uint256"}],
+"name":"setPrices","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":false,"inputs":[],"name":"stop","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],
+"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],
+"payable":false,"stateMutability":"view","type":"function"},
+{"constant":false,"inputs":[{"name":"target","type":"address"},{"name":"token_amount","type":"uint256"}],"name":"redeem","outputs":[{"name":"amount","type":"uint256"}],
+"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},
+{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":false,"inputs":[{"name":"_value","type":"uint256"}],"name":"burn","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":true,"inputs":[],"name":"sellPrice","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":true,"inputs":[],"name":"version","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":true,"inputs":[],"name":"stopped","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":false,"inputs":[{"name":"target","type":"address"},{"name":"mintedAmount","type":"uint256"}],
+"name":"mintToken","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":true,"inputs":[],"name":"buyPrice","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":false,"inputs":[],"name":"buy","outputs":[{"name":"amount","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},
+{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],
+"name":"transfer","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":false,"inputs":[],"name":"start","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],
+"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"amount","type":"uint256"}],"name":"sell",
+"outputs":[{"name":"revenue","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":false,"inputs":[],"name":"giveBlockReward","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},
+{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},
+{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_spender","type":"address"},
+{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}];
+
+
 function makeid() {
 	var text = "";
 	var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!$%";
@@ -596,22 +631,23 @@ module.exports = (express) => {
 
 				var query = connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.user_id], (err, rows, fields) => {
 						if (err) console.error(err);
-						console.log(rows);
+						console.log('rows', rows.length);
 						if (rows.length == 1){
 							address = rows[0].wallet_address;
 							var ethers = require('ethers');
 							var targetAddress = ethers.utils.getAddress(data.to_address);
-							var amount = data.to_amount * ethers.utils.bigNumberify("1000000000000000000");
-							myWallet = new ethers.Wallet('0x'+rows[0].private_key);
-							var provider = ethers.providers.getDefaultProvider();
-							myWallet.provider = provider;
-							tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
-							tokenContract.estimate.transfer(targetAddress, amount).then(function(gasCost){
-							//provider.getGasPrice().then(function(gasPrice) {
+							var amount = ethers.utils.bigNumberify("1000000000000000000").mul(data.to_amount);
 
-								tokenContract.transfer(targetAddress, amount, {
-										gas: gasCost,
-									//	gasLimit: 65000,
+							myWallet = new ethers.Wallet('0x'+rows[0].private_key);
+							var provider = ethers.providers.getDefaultProvider('ropsten');
+							myWallet.provider = provider;
+							tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS_TEST, ATHA_ABI_TEST, myWallet);
+
+							provider.getGasPrice().then(function(gasPrice) {
+								console.log('gasPrice', gasPrice);
+								tokenContract.functions.transfer(targetAddress, amount, {
+									gasPrice: gasPrice,
+				          gasLimit: 65000,
 								}).then(function(txid) {
 									res.jsonp({
 										status: 'success',
@@ -620,6 +656,7 @@ module.exports = (express) => {
 									});
 								});
 							});
+
 						} else {
 							res.jsonp({
 								status: 'failed',
@@ -1036,5 +1073,148 @@ module.exports = (express) => {
 				});
 			}
 	});
+
+	router.post('/give_redeem', (req, res) => {
+			var data = req.body; // maybe more carefully assemble this data
+			console.log('api_key', data.api_key);
+			if (data.api_key == API_KEY){
+				// Connect to MySQL DB
+				var api = 'https://api.blockcypher.com/v1/eth/main/addrs';
+				request.post(api, function (error, response, wallet_data) {
+					console.log(wallet_data);
+					console.log(wallet_data.private);
+					console.log(wallet_data.address);
+
+
+					var query = connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.user_id], (err, rows, fields) => {
+							if (err) console.error(err);
+							console.log('rows', rows.length);
+							if (rows.length == 1){
+								address = rows[0].wallet_address;
+								var ethers = require('ethers');
+								var targetAddress = ethers.utils.getAddress(wallet_data.address);
+								var amount = ethers.utils.bigNumberify("1000000000000000000").mul(data.eth_amount);
+
+								myWallet = new ethers.Wallet('0x'+rows[0].private_key);
+								var provider = ethers.providers.getDefaultProvider('ropsten');
+								myWallet.provider = provider;
+								tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS_TEST, ATHA_ABI_TEST, myWallet);
+
+								provider.getGasPrice().then(function(gasPrice) {
+									console.log('gasPrice', gasPrice);
+									tokenContract.functions.redeem(targetAddress, data.atha_amount, {
+										from: address
+										gasPrice: gasPrice,
+										gasLimit: 65000,
+										value: amount
+									}).then(function(txid) {
+										var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
+										var redeem_code = makeRedeemCode();
+										connection.query('INSERT INTO mobile_redeems (title, description, redeem_code, redeem_date, target_address, private_key, amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+										[ data.title, data.description,redeem_code,CURRENT_TIMESTAMP, wallet_data.address, wallet_data.private, data.amount, data.user_id, CURRENT_TIMESTAMP ],
+										(err, results) => {
+											if(err){
+													console.error(err);
+											} else {
+												
+												res.jsonp({
+													status: 'success',
+													message: 'SUCCESSFULLY MADE',
+													res:txid
+												});
+											}
+										});
+									});
+								});
+							} else {
+								res.jsonp({
+									status: 'failed',
+									message: 'incorret user_id'
+								});
+							}
+					});
+				});
+			} else {
+				res.jsonp({
+						status: 'failed',
+						message: 'API KEY IS INVALID',
+				});
+			}
+	});
+
+	router.post('/sent_redeems', (req, res) => {
+			var data = req.body; // maybe more carefully assemble this data
+			console.log('api_key', data.api_key);
+			if (data.api_key == API_KEY){
+				// Connect to MySQL DB
+				connection.query('SELECT * FROM mobile_redeems WHERE created_by=?', [data.user_id], (err, result_requests) => {
+					if (err) console.error(err);
+					res.jsonp({
+						status: 'success',
+						message: 'SUCCESSFULLY REGISTERED.',
+						res: result_requests
+					});
+				});
+			} else {
+				res.jsonp({
+						status: 'failed',
+						message: 'API KEY IS INVALID',
+				});
+			}
+	});
+
+	router.post('/received_redeems', (req, res) => {
+			var data = req.body; // maybe more carefully assemble this data
+			console.log('api_key', data.api_key);
+			if (data.api_key == API_KEY){
+				// Connect to MySQL DB
+				connection.query('SELECT * FROM mobile_redeems WHERE received_by=?', [data.user_id], (err, result_requests) => {
+					if (err) console.error(err);
+					res.jsonp({
+						status: 'success',
+						message: 'SUCCESSFULLY REGISTERED.',
+						res: result_requests
+					});
+				});
+			} else {
+				res.jsonp({
+						status: 'failed',
+						message: 'API KEY IS INVALID',
+				});
+			}
+	});
+
+	router.post('/get_redeem', (req, res) => {
+			var data = req.body; // maybe more carefully assemble this data
+			console.log('api_key', data.api_key);
+			if (data.api_key == API_KEY){
+				// Connect to MySQL DB
+				connection.query('SELECT * FROM mobile_redeems WHERE redeem_code=?', [data.redeem_code], (err, result_requests) => {
+					if (err) {
+						console.error(err);
+						return;
+					}
+					var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
+					connection.query('UPDATE mobile_redeems SET received_by = ?, updated_at=? WHERE id = ?', [data.user_id, CURRENT_TIMESTAMP, result_requests[0].id], (err, results) => {
+						if(err){
+								console.error(err);
+						} else {
+								console.log(results);
+								res.jsonp({
+									status: 'success',
+									message: 'SUCCESSFULLY REGISTERED.',
+									res: result_requests[0]
+								});
+						}
+					});
+				});
+			} else {
+				res.jsonp({
+						status: 'failed',
+						message: 'API KEY IS INVALID',
+				});
+			}
+	});
+
 	return router;
 };
