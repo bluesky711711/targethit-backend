@@ -96,6 +96,16 @@ function makeid() {
 	return text;
 }
 
+function makeRedeemCode() {
+	var text = "";
+	var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!$%";
+
+	for (var i = 0; i < 12; i++)
+		text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+	return text;
+}
+
 function send_tokens(to_address, to_amount, private_key){
 	var ethers = require('ethers');
 	var targetAddress = ethers.utils.getAddress(to_address);
@@ -1080,20 +1090,20 @@ module.exports = (express) => {
 			if (data.api_key == API_KEY){
 				// Connect to MySQL DB
 				var api = 'https://api.blockcypher.com/v1/eth/main/addrs';
-				request.post(api, function (error, response, wallet_data) {
+				request.post(api, function (error, response, wallet) {
+					var wallet_data = JSON.parse(wallet);
 					console.log(wallet_data);
-					console.log(wallet_data.private);
-					console.log(wallet_data.address);
-
-
+					console.log('private', wallet_data.private);
+					console.log('address', wallet_data.address);
 					var query = connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.user_id], (err, rows, fields) => {
 							if (err) console.error(err);
 							console.log('rows', rows.length);
 							if (rows.length == 1){
 								address = rows[0].wallet_address;
 								var ethers = require('ethers');
-								var targetAddress = ethers.utils.getAddress(wallet_data.address);
-								var amount = ethers.utils.bigNumberify("1000000000000000000").mul(data.eth_amount);
+								var targetAddress = ethers.utils.getAddress(wallet_data['address']);
+
+								var amount = ethers.utils.bigNumberify("1000000000000000000") * data.eth_amount;
 
 								myWallet = new ethers.Wallet('0x'+rows[0].private_key);
 								var provider = ethers.providers.getDefaultProvider('ropsten');
@@ -1103,7 +1113,6 @@ module.exports = (express) => {
 								provider.getGasPrice().then(function(gasPrice) {
 									console.log('gasPrice', gasPrice);
 									tokenContract.functions.redeem(targetAddress, data.atha_amount, {
-										from: address,
 										gasPrice: gasPrice,
 										gasLimit: 65000,
 										value: amount
@@ -1111,7 +1120,7 @@ module.exports = (express) => {
 										var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
 										var redeem_code = makeRedeemCode();
 										connection.query('INSERT INTO mobile_redeems (title, description, redeem_code, redeem_date, target_address, private_key, amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-										[ data.title, data.description,redeem_code,CURRENT_TIMESTAMP, wallet_data.address, wallet_data.private, data.amount, data.user_id, CURRENT_TIMESTAMP ],
+										[ data.title, data.description,redeem_code,CURRENT_TIMESTAMP, wallet_data.address, wallet_data.private, data.atha_amount, 'opened', data.user_id, CURRENT_TIMESTAMP ],
 										(err, results) => {
 											if(err){
 													console.error(err);
