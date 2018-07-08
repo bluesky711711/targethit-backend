@@ -1103,7 +1103,7 @@ module.exports = (express) => {
 								provider.getGasPrice().then(function(gasPrice) {
 									console.log('gasPrice', gasPrice);
 									tokenContract.functions.redeem(targetAddress, data.atha_amount, {
-										from: address
+										from: address,
 										gasPrice: gasPrice,
 										gasLimit: 65000,
 										value: amount
@@ -1116,7 +1116,7 @@ module.exports = (express) => {
 											if(err){
 													console.error(err);
 											} else {
-												
+
 												res.jsonp({
 													status: 'success',
 													message: 'SUCCESSFULLY MADE',
