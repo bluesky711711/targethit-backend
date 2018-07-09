@@ -1108,7 +1108,7 @@ module.exports = (express) => {
 								myWallet = new ethers.Wallet('0x'+rows[0].private_key);
 								var provider = ethers.providers.getDefaultProvider('ropsten');
 								myWallet.provider = provider;
-								tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS_TEST, ATHA_ABI_TEST, myWallet);
+								tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
 
 								provider.getGasPrice().then(function(gasPrice) {
 									console.log('gasPrice', gasPrice);
