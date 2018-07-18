@@ -205,6 +205,7 @@ module.exports = (express) => {
 
 				var query = connection.query('SELECT * FROM tbl_fans WHERE email=? AND password=?', [data.email, data.password], (err, rows, fields) => {
 						if (err) console.error(err);
+						console.log(rows);
 						if (rows.length == 1){
 							res.jsonp({
 								status: 'success',
@@ -311,7 +312,46 @@ module.exports = (express) => {
 				});
 			}
 	});
+	router.post('/resetpassword', (req, res) => {
+			var data = req.body; // maybe more carefully assemble this data
+			console.log(data.api_key);
+			if (data.api_key == API_KEY){
+				// Connect to MySQL DB
+				var query = connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.user_id], (err, rows, fields) => {
+						if (err) console.error(err);
+						if (rows.length == 1){
+							connection.query('UPDATE tbl_fans SET password = ? WHERE id=?', [data.password, data.user_id], (err, result) => {
+								if (err){
+									res.jsonp({
+										status: 'failed',
+										message: 'INVALID USER ID.',
+										res: []
+									});
+								} else {
+											res.jsonp({
+												status: 'success',
+												message: 'password successfully updated!',
+												res: []
+											});
+								}
+							});
+						} else {
+							res.jsonp({
+								status: 'failed',
+								message: 'INVALID USER ID.',
+								res: []
+							});
+						}
+				});
 
+				console.log(query.sql);
+			} else {
+				res.jsonp({
+						status: 'failed',
+						message: 'API KEY IS INVALID',
+				});
+			}
+	});
 	router.post('/register', (req, res) => {
 			var data = req.body; // maybe more carefully assemble this data
 			console.log(data.api_key);
@@ -909,7 +949,7 @@ module.exports = (express) => {
 			if (data.api_key == API_KEY){
 				// Connect to MySQL DB
 				var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
-				connection.query('INSERT INTO tbl_selling_requests (selling_amount, seller_id, price, status, created_at) VALUES (?, ?, ?, ?, ?)', [data.selling_amount, data.seller_id, data.price, "open", CURRENT_TIMESTAMP], (err, results) => {
+				connection.query('INSERT INTO tbl_selling_requests (selling_amount, seller_id, price, status, created_at) VALUES (?, ?, ?, ?, ?)', [data.selling_amount, data.seller_id, data.selling_price, "open", CURRENT_TIMESTAMP], (err, results) => {
 					if(err){
 							console.error(err);
 					} else {
