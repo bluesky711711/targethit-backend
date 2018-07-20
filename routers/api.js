@@ -273,7 +273,8 @@ module.exports = (express) => {
 									  from: 'athleticoinapps@gmail.com',
 									  to: data.email,
 									  subject: 'NEW PASSWORD FROM ATHA',
-									  text: new_pass
+									  text: 'Your  password  has  been  reset.  Please  return  to  the  app  and  use  this  password  to  login.\n' + new_pass,
+										html: '<b>Your  password  has  been  reset.  Please  return  to  the  app  and  use  this  password  to  login.</b><h1>' + new_pass + '</h1>'
 									};
 
 									transporter.sendMail(mailOptions, function(error, info){
@@ -484,8 +485,14 @@ module.exports = (express) => {
 										message: 'got balance',
 										balance: atyxValue
 									});
+							})
+							.catch(function(error){
+								res.jsonp({
+									status: 'failed',
+									message: 'error',
+									res: error
+								});
 							});
-
 						} else {
 							res.jsonp({
 								status: 'failed',
