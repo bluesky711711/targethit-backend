@@ -1156,7 +1156,7 @@ module.exports = (express) => {
 								val = data.atha_amount;
 				        val_total = val * 102 / 100;
 				        price = data.eth_amount;
-				        price = price * web3.toBigNumber('1000000000000000000');
+				        price = price * web3.utils.toBN('1000000000000000000');
 
 				        Contract.redeem.estimateGas(targetAddress, val_total, {from: web3.eth.defaultAccount, value: price}, function(error, result){
 				          if (!error){
