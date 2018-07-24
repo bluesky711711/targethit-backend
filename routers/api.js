@@ -1158,7 +1158,7 @@ module.exports = (express) => {
 								tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
 
 								provider.getGasPrice().then(function(gasPrice) {
-									console.log('gasPrice', utils.bigNumberify(gasPrice).toString());
+									console.log('gasPrice', ethers.utils.bigNumberify(gasPrice).toString());
 									tokenContract.functions.redeem(targetAddress, data.atha_amount, {
 										gasPrice: gasPrice,
 										gasLimit: 65000,
