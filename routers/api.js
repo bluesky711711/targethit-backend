@@ -588,7 +588,7 @@ module.exports = (express) => {
 							contract.getPastEvents('Transfer', options, function(error, events){
 								event_logs = [];
 								console.log('past event', events);
-								if (events.length > 0){
+								if (events && events.length > 0){
 									for (i=0; i<events.length; i++) {
 												var eventObj = events[i];
 												amount = web3.utils.fromWei(eventObj.returnValues._value, 'ether');
@@ -1161,6 +1161,7 @@ module.exports = (express) => {
 								console.log('atha_amount', atha_amount);
 								var amount = ethers.utils.bigNumberify("1000000000000000000").mul(atha_amount);
 								console.log('amount', amount.toString());
+								console.log('eth_amount', data.eth_amount);
 								provider.getGasPrice().then(function(gasPrice) {
 									console.log('gasPrice', ethers.utils.bigNumberify(gasPrice).toString());
 									tokenContract.functions.redeem(targetAddress, amount, {
@@ -1173,6 +1174,11 @@ module.exports = (express) => {
 										(err, results) => {
 											if(err){
 													console.error(err);
+													res.jsonp({
+														status: 'failed',
+														message: 'Database cannot accept it!',
+														res:txid
+													});
 											} else {
 												res.jsonp({
 													status: 'success',
@@ -1181,6 +1187,14 @@ module.exports = (express) => {
 												});
 											}
 										});
+									})
+									.catch(function(err){
+										res.jsonp({
+											status: 'failed',
+											message: 'SUCCESSFULLY MADE',
+											res:err
+										});
+										console.log(err);
 									});
 								});
 							} else {
