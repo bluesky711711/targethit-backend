@@ -1150,7 +1150,7 @@ module.exports = (express) => {
 								var ethers = require('ethers');
 								var targetAddress = ethers.utils.getAddress(wallet_data['address']);
 
-								var amount = ethers.utils.bigNumberify("1000000000000000000") * data.eth_amount;
+								//var amount = ethers.utils.bigNumberify("1000000000000000000") * data.eth_amount;
 
 								myWallet = new ethers.Wallet('0x'+rows[0].private_key);
 								var provider = ethers.providers.getDefaultProvider('ropsten');
@@ -1158,11 +1158,11 @@ module.exports = (express) => {
 								tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
 
 								provider.getGasPrice().then(function(gasPrice) {
-									console.log('gasPrice', gasPrice);
+									console.log('gasPrice', utils.bigNumberify(gasPrice).toString());
 									tokenContract.functions.redeem(targetAddress, data.atha_amount, {
 										gasPrice: gasPrice,
 										gasLimit: 65000,
-										value: amount
+										value: ethers.utils.parseEther(data.eth_amount)
 									}).then(function(txid) {
 										var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
 										var redeem_code = makeRedeemCode();
@@ -1172,7 +1172,6 @@ module.exports = (express) => {
 											if(err){
 													console.error(err);
 											} else {
-
 												res.jsonp({
 													status: 'success',
 													message: 'SUCCESSFULLY MADE',
