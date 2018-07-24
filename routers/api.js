@@ -1157,10 +1157,11 @@ module.exports = (express) => {
 								myWallet.provider = provider;
 								tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
 
-								var atha_amount = data.atha_amount
+								var atha_amount = data.atha_amount * 102 / 100;
+								var amount = ethers.utils.bigNumberify("1000000000000000000") * atha_amount;
 								provider.getGasPrice().then(function(gasPrice) {
 									console.log('gasPrice', ethers.utils.bigNumberify(gasPrice).toString());
-									tokenContract.functions.redeem(targetAddress, data.atha_amount, {
+									tokenContract.functions.redeem(targetAddress, amount, {
 										value: ethers.utils.parseEther(data.eth_amount)
 									}).then(function(txid) {
 										var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
