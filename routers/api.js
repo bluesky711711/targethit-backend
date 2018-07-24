@@ -1150,37 +1150,43 @@ module.exports = (express) => {
 								var ethers = require('ethers');
 								var targetAddress = ethers.utils.getAddress(wallet_data['address']);
 
-								//var amount = ethers.utils.bigNumberify("1000000000000000000") * data.eth_amount;
+								var Web3 = require('web3');
+								web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/BceusOxaYwbSwW4JpH94'));
+								var Contract = new web3.eth.Contract(ATHA_ABI, ATHA_CONTRACT_ADDRESS);
+								val = data.atha_amount;
+				        val_total = val * 102 / 100;
+				        price = data.eth_amount;
+				        price = price * web3_API.toBigNumber('1000000000000000000');
 
-								myWallet = new ethers.Wallet('0x'+rows[0].private_key);
-								var provider = ethers.providers.getDefaultProvider('ropsten');
-								myWallet.provider = provider;
-								tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
-
-								provider.getGasPrice().then(function(gasPrice) {
-									console.log('gasPrice', ethers.utils.bigNumberify(gasPrice).toString());
-									tokenContract.functions.redeem(targetAddress, data.atha_amount, {
-										gasPrice: gasPrice,
-										gasLimit: 65000,
-										value: ethers.utils.parseEther(data.eth_amount)
-									}).then(function(txid) {
-										var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
-										var redeem_code = makeRedeemCode();
-										connection.query('INSERT INTO mobile_redeems (title, description, redeem_code, redeem_date, target_address, private_key, amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-										[ data.title, data.description,redeem_code,CURRENT_TIMESTAMP, wallet_data.address, wallet_data.private, data.atha_amount, 'opened', data.user_id, CURRENT_TIMESTAMP ],
-										(err, results) => {
-											if(err){
-													console.error(err);
-											} else {
-												res.jsonp({
-													status: 'success',
-													message: 'SUCCESSFULLY MADE',
-													res:txid
-												});
-											}
+				        Contract.redeem.estimateGas(targetAddress, val_total, {from: web3.eth.defaultAccount, value: price}, function(error, result){
+				          if (!error){
+				            Contract.redeem(targetAddress, val_total, {from: web3.eth.defaultAccount, gas:result, value: price}, function(error, result){
+				                if (!error){
+													var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
+													var redeem_code = makeRedeemCode();
+													connection.query('INSERT INTO mobile_redeems (title, description, redeem_code, redeem_date, target_address, private_key, amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+													[ data.title, data.description,redeem_code,CURRENT_TIMESTAMP, wallet_data.address, wallet_data.private, data.atha_amount, 'opened', data.user_id, CURRENT_TIMESTAMP ],
+													(err, results) => {
+														if(err){
+																console.error(err);
+														} else {
+															res.jsonp({
+																status: 'success',
+																message: 'SUCCESSFULLY MADE',
+																res:result
+															});
+														}
+													});
+				                }
+				            });
+				          } else {
+										res.jsonp({
+											status: 'failed',
+											message: 'Network Busy!',
+											res:result
 										});
-									});
-								});
+				          }
+				       });
 							} else {
 								res.jsonp({
 									status: 'failed',
