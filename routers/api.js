@@ -273,8 +273,8 @@ module.exports = (express) => {
 									  from: 'athleticoinapps@gmail.com',
 									  to: data.email,
 									  subject: 'NEW PASSWORD FROM ATHA',
-									  text: 'Your  password  has  been  reset.  Please  return  to  the  app  and  use  this  password  to  login.\n' + new_pass,
-										html: '<b>Your  password  has  been  reset.  Please  return  to  the  app  and  use  this  password  to  login.</b><h1>' + new_pass + '</h1>'
+									  text: 'Your  password  has  been  reset.  Please  return  to  the  app  and  use  this  password  to  login.\n' + new_pass + " \nThank you for supporting Athleticoin. Visit our website at www.athleticoinawards.org for more information.",
+										html: '<b>Your  password  has  been  reset.  Please  return  to  the  app  and  use  this  password  to  login.</b><h1> ' + new_pass + '</h1></b><h2>Thank you for supporting Athleticoin. Visit our website at www.athleticoinawards.org for more information.</h2>'
 									};
 
 									transporter.sendMail(mailOptions, function(error, info){
@@ -1272,13 +1272,19 @@ module.exports = (express) => {
 				connection.query('SELECT * FROM mobile_redeems WHERE redeem_code=? AND status=?', [data.redeem_code, "opened"], (err, result_requests) => {
 					if (err) {
 						console.error(err);
+						res.jsonp({
+							status: 'failed',
+							message: 'Cannot find the redeem.',
+							res: []
+						});
 						return;
 					}
-					var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
-					connection.query('UPDATE mobile_redeems SET received_by = ?, status = ?, updated_at = ? WHERE id = ?', [data.user_id, 'closed', CURRENT_TIMESTAMP, result_requests[0].id], (err, results) => {
-						if(err){
+					if (result_requests.length > 0) {
+						var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
+						connection.query('UPDATE mobile_redeems SET received_by = ?, status = ?, updated_at = ? WHERE id = ?', [data.user_id, 'closed', CURRENT_TIMESTAMP, result_requests[0].id], (err, results) => {
+							if(err){
 								console.error(err);
-						} else {
+							} else {
 								console.log(results);
 								result_requests[0].received_by = data.user_id;
 								result_requests[0].status = 'closed';
@@ -1287,8 +1293,15 @@ module.exports = (express) => {
 									message: 'SUCCESSFULLY REGISTERED.',
 									res: result_requests[0]
 								});
-						}
-					});
+							}
+						});
+					} else {
+						res.jsonp({
+							status: 'failed',
+							message: 'Cannot find the available redeem.',
+							res: []
+						});
+					}
 				});
 			} else {
 				res.jsonp({
