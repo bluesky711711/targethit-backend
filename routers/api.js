@@ -782,7 +782,7 @@ module.exports = (express) => {
 				query = 'SELECT tbl_events.*, tbl_sports.SportName as sport, tbl_leagues.LeagueName as league FROM tbl_events left join tbl_sports on tbl_sports.id = tbl_events.sport_id left join tbl_leagues on tbl_leagues.id = tbl_events.league_id';
 				query_where = '';
 				if (data.sport != ''){
-					query_where = ' WHERE sport like "%' + data.sport + '%"';
+					query_where = ' WHERE tbl_sports.SportName like "%' + data.sport + '%"';
 				}
 
 				if (data.keyword != ''){
