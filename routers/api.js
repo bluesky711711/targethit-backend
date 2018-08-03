@@ -88,7 +88,7 @@ const ATHA_ABI_TEST = [{"constant":false,"inputs":[{"name":"newSellPrice","type"
 
 function makeid() {
 	var text = "";
-	var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!$%";
+	var possible = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghkmnpqrstuvwxyz123456789!$%";
 
 	for (var i = 0; i < 8; i++)
 		text += possible.charAt(Math.floor(Math.random() * possible.length));
@@ -98,7 +98,7 @@ function makeid() {
 
 function makeRedeemCode() {
 	var text = "";
-	var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!$%";
+	var possible = "ABCDEFGHJKMNOPQRSTUVWXYZabcdefghjkmnopqrstuvwxyz123456789!$%";
 
 	for (var i = 0; i < 12; i++)
 		text += possible.charAt(Math.floor(Math.random() * possible.length));
