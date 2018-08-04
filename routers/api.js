@@ -571,7 +571,6 @@ module.exports = (express) => {
 							var contract = new web3.eth.Contract(ATHA_ABI, ATHA_CONTRACT_ADDRESS);
 							var ethers = require('ethers');
 							var provider = new ethers.providers.EtherscanProvider();
-
 							var options =  {
     							filter: {_from: address},
     							fromBlock: 0,
@@ -683,9 +682,7 @@ module.exports = (express) => {
 			var data = req.body; // maybe more carefully assemble this data
 			console.log('api_key', data.api_key);
 			if (data.api_key == API_KEY){
-
 				// Connect to MySQL DB
-
 				var query = connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.user_id], (err, rows, fields) => {
 						if (err) console.error(err);
 						console.log('rows', rows.length);
@@ -720,7 +717,6 @@ module.exports = (express) => {
 								message: 'incorret user_id'
 							});
 						}
-
 				});
 				console.log(query.sql);
 			} else {
@@ -928,11 +924,10 @@ module.exports = (express) => {
 			var data = req.body; // maybe more carefully assemble this data
 			console.log('api_key', data.api_key);
 			if (data.api_key == API_KEY){
-
 				// Connect to MySQL DB
-
-				query = 'SELECT tbl_selling_requests.*, tbl_fans.name as seller FROM tbl_selling_requests LEFT JOIN tbl_fans ON tbl_fans.id = tbl_selling_requests.seller_id WHERE status = "open"';
-				connection.query(query, [], (err, rows, fields) => {
+				query = 'SELECT tbl_selling_requests.*, tbl_fans.name as seller FROM tbl_selling_requests LEFT JOIN tbl_fans ON tbl_fans.id = tbl_selling_requests.seller_id
+				WHERE status = "open" AND seller_id != ?';
+				connection.query(query, [data.user_id], (err, rows, fields) => {
 						if (err) console.error(err);
 						console.log(rows);
 						res.jsonp({
@@ -940,7 +935,6 @@ module.exports = (express) => {
 							message: 'SUCCESSFULLY GOT',
 							res: rows
 						});
-
 				});
 			} else {
 				res.jsonp({
@@ -1149,8 +1143,6 @@ module.exports = (express) => {
 								address = rows[0].wallet_address;
 								var ethers = require('ethers');
 								var targetAddress = ethers.utils.getAddress(wallet_data['address']);
-
-								//var amount = ethers.utils.bigNumberify("1000000000000000000") * data.eth_amount;
 
 								myWallet = new ethers.Wallet('0x'+rows[0].private_key);
 								var providers = ethers.providers;
