@@ -993,6 +993,11 @@ module.exports = (express) => {
 				connection.query('SELECT tbl_selling_requests.*, tbl_fans.* FROM tbl_selling_requests left join tbl_fans on tbl_fans.id = tbl_selling_requests.seller_id WHERE tbl_selling_requests.id=?', [data.request_id], (err, result_requests) => {
 					if (err) {
 						console.error(err);
+						res.jsonp({
+							status: 'failed',
+							message: 'failed to find selling request.',
+							res:[]
+						});
 					} else {
 						console.log('tbl_selling_requests', result_requests);
 						address = result_requests[0].wallet_address;
@@ -1025,6 +1030,11 @@ module.exports = (express) => {
 												connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.buyer_id], (err, rows, fields) => {
 													if (err){
 														console.log(err);
+														res.jsonp({
+															status: 'failed',
+															message: 'Cannot find buyer',
+															res: []
+														});
 													} else {
 														if (rows.length == 1){
 															seller_address = result_requests[0].wallet_address;
