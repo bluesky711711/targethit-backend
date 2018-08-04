@@ -1087,7 +1087,7 @@ module.exports = (express) => {
 						var ethers = require('ethers');
 						var targetAddress = app_address;
 						var amount = data.vote_amount * ethers.utils.bigNumberify("1000000000000000000");
-						myWallet = new ethers.Wallet(rows[0].private_key);
+						myWallet = new ethers.Wallet('0x'+rows[0].private_key);
 						var provider = ethers.providers.getDefaultProvider();
 						myWallet.provider = provider;
 						tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
@@ -1300,7 +1300,7 @@ module.exports = (express) => {
 					} else {
 						res.jsonp({
 							status: 'failed',
-							message: 'Cannot find the available redeem.',
+							message: 'This redeem code has been redeemed or is no longer valid. Please check your code and try again.',
 							res: []
 						});
 					}
