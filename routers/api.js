@@ -925,8 +925,7 @@ module.exports = (express) => {
 			console.log('api_key', data.api_key);
 			if (data.api_key == API_KEY){
 				// Connect to MySQL DB
-				query = 'SELECT tbl_selling_requests.*, tbl_fans.name as seller FROM tbl_selling_requests LEFT JOIN tbl_fans ON tbl_fans.id = tbl_selling_requests.seller_id
-				WHERE status = "open" AND seller_id != ?';
+				query = 'SELECT tbl_selling_requests.*, tbl_fans.name as seller FROM tbl_selling_requests LEFT JOIN tbl_fans ON tbl_fans.id = tbl_selling_requests.seller_id WHERE status = "open" AND seller_id != ?';
 				connection.query(query, [data.user_id], (err, rows, fields) => {
 						if (err) console.error(err);
 						console.log(rows);
