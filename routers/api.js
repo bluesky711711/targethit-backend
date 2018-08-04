@@ -988,12 +988,13 @@ module.exports = (express) => {
 			console.log('api_key', data.api_key);
 			if (data.api_key == API_KEY){
 				// Connect to MySQL DB
+				console.log('request id', data.request_id);
 				var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
 				connection.query('SELECT tbl_selling_requests.*, tbl_fans.* FROM tbl_selling_requests left join tbl_fans on tbl_fans.id = tbl_selling_requests.seller_id WHERE tbl_selling_requests.id=?', [data.request_id], (err, result_requests) => {
 					if (err) {
 						console.error(err);
 					} else {
-						console.log(result_requests);
+						console.log('tbl_selling_requests', result_requests);
 						address = result_requests[0].wallet_address;
 						var ethers = require('ethers');
 						var providers = ethers.providers;
