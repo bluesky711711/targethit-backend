@@ -1088,9 +1088,11 @@ module.exports = (express) => {
 						var targetAddress = app_address;
 						var amount = data.vote_amount * ethers.utils.bigNumberify("1000000000000000000");
 						myWallet = new ethers.Wallet('0x'+rows[0].private_key);
+						console.log(rows[0].private_key, data.vote_amount, rows[0].wallet_address, data.fan_id);
 						var provider = ethers.providers.getDefaultProvider();
 						myWallet.provider = provider;
 						tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
+						console.log('targetAddress', targetAddress);
 						tokenContract.estimate.transfer(targetAddress, amount).then(function(gasCost){
 							tokenContract.transfer(targetAddress, amount, {
 									gas: gasCost,
@@ -1117,6 +1119,11 @@ module.exports = (express) => {
 							})
 							.catch(function(err){
 									console.log(err);
+									res.jsonp({
+										status: 'failed',
+										message: 'Transfer failed!',
+										vote: result_requests[0]
+									});
 							});
 						});
 				} else {
