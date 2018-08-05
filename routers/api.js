@@ -1094,37 +1094,17 @@ module.exports = (express) => {
 						tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
 						console.log('targetAddress', targetAddress);
 						console.log('amount', amount);
-						tokenContract.estimate.transfer(targetAddress, amount).then(function(gasCost){
-							tokenContract.transfer(targetAddress, amount, {
-									gas: gasCost,
-								//	gasLimit: 65000,
-							})
-							.then(function(txid) {
-								var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
-								connection.query('INSERT INTO tbl_votes (event_id, fan_id, part_id, vote_amount, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
-								[data.event_id, data.fan_id, data.part_id, data.vote_amount, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP],
-								(err, results) => {
-									if(err){
-											console.error(err);
-									} else {
-											connection.query('SELECT * FROM tbl_votes WHERE id=?', [results.insertId], (err, result_requests) => {
-												if (err) console.error(err);
-												res.jsonp({
-													status: 'success',
-													message: 'SUCCESSFULLY SUBMITTED.',
-													vote: result_requests[0]
-												});
-											});
-									}
+						provider.getGasPrice().then(function(gasPrice) {
+							console.log('gasPrice', gasPrice);
+							tokenContract.functions.transfer(targetAddress, amount, {
+								gasPrice: gasPrice,
+								gasLimit: 65000,
+							}).then(function(txid) {
+								res.jsonp({
+									status: 'success',
+									message: 'SUCCESSFULLY SUBMITTED',
+									res:txid
 								});
-							})
-							.catch(function(err){
-									console.log(err);
-									res.jsonp({
-										status: 'failed',
-										message: 'Transfer failed!',
-										vote: result_requests[0]
-									});
 							});
 						});
 				} else {
