@@ -1086,13 +1086,14 @@ module.exports = (express) => {
 						address = rows[0].wallet_address;
 						var ethers = require('ethers');
 						var targetAddress = app_address;
-						var amount = data.vote_amount * ethers.utils.bigNumberify("1000000000000000000");
+					 	var amount = ethers.utils.bigNumberify("1000000000000000000").mul(data.vote_amount);
 						myWallet = new ethers.Wallet('0x'+rows[0].private_key);
 						console.log(rows[0].private_key, data.vote_amount, rows[0].wallet_address, data.fan_id);
 						var provider = ethers.providers.getDefaultProvider();
 						myWallet.provider = provider;
 						tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
 						console.log('targetAddress', targetAddress);
+						console.log('amount', amount);
 						tokenContract.estimate.transfer(targetAddress, amount).then(function(gasCost){
 							tokenContract.transfer(targetAddress, amount, {
 									gas: gasCost,
