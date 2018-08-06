@@ -115,14 +115,24 @@ function send_tokens(to_address, to_amount, private_key){
 	var provider = ethers.providers.getDefaultProvider();
 	myWallet.provider = provider;
 	tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
-	tokenContract.estimate.transfer(targetAddress, amount).then(function(gasCost){
-		tokenContract.transfer(targetAddress, amount, {
-				gas: gasCost,
-			//	gasLimit: 65000,
+	provider.getGasPrice().then(function(gasPrice) {
+		console.log('gasPrice', gasPrice);
+		tokenContract.functions.transfer(targetAddress, amount, {
+			gasPrice: gasPrice,
+			gasLimit: 65000,
 		}).then(function(txid) {
 			console.log('success', txid);
 		});
 	});
+
+	// tokenContract.estimate.transfer(targetAddress, amount).then(function(gasCost){
+	// 	tokenContract.transfer(targetAddress, amount, {
+	// 			gas: gasCost,
+	// 		//	gasLimit: 65000,
+	// 	}).then(function(txid) {
+	// 		console.log('success', txid);
+	// 	});
+	// });
 }
 
 function send_eth(to_address, to_amount, private_key){
