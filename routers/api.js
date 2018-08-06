@@ -1143,7 +1143,7 @@ module.exports = (express) => {
 															fee = eth_amount * 2 / 100;
 															send_eth(app_address, fee, buyer_private_key);
 															send_eth(seller_address, eth_amount, buyer_private_key);
-															send_token(buyer_address, token_amount, seller_private_key);
+															send_tokens(buyer_address, token_amount, seller_private_key);
 															res.jsonp({
 																status: 'success',
 																message: 'updated',
