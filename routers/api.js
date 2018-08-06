@@ -775,7 +775,7 @@ module.exports = (express) => {
 			var data = req.body; // maybe more carefully assemble this data
 			console.log('api_key', data.api_key);
 			if (data.api_key == API_KEY){
-				query = 'SELECT tbl_events.*, tbl_sports.SportName as sport, tbl_leagues.LeagueName as league FROM tbl_events left join tbl_sports on tbl_sports.id = tbl_events.sport_id left join tbl_leagues on tbl_leagues.id = tbl_events.league_id';
+				query = 'SELECT tbl_events.*, tbl_fans.name as winner_fan_name, tbl_participants.last_name as winner_part_lastname, tbl_participants.first_name as winner_part_firstname, tbl_sports.SportName as sport, tbl_leagues.LeagueName as league FROM tbl_events left join tbl_sports on tbl_sports.id = tbl_events.sport_id left join tbl_leagues on tbl_leagues.id = tbl_events.league_id left join tbl_participants on tbl_participants.id = tbl_events.winner_part_id left join tbl_fans on tbl_fans.id = tbl_events.winner_fan_id';
 				query_where = '';
 				if (data.sport != ''){
 					query_where = ' WHERE tbl_sports.SportName like "%' + data.sport + '%"';
@@ -796,6 +796,7 @@ module.exports = (express) => {
 						query_where = query_where + ' AND tbl_events.status = "' + data.status + '"';
 					}
 				}
+
 				query = query + query_where;
 				console.log(query);
 				connection.query(query, [], (err, rows, fields) => {
@@ -806,7 +807,6 @@ module.exports = (express) => {
 							message: 'SUCCESSFULLY GOT',
 							events: rows
 						});
-
 				});
 			} else {
 				res.jsonp({
@@ -815,6 +815,103 @@ module.exports = (express) => {
 						events:[]
 				});
 			}
+	});
+
+	router.post('/get_winner_part_amount_by_event', (req, res) => {
+		var data = req.body; // maybe more carefully assemble this data
+		console.log('api_key', data.api_key);
+		if (data.api_key == API_KEY){
+				var query = connection.query('SELECT * FROM tbl_events WHERE id=? AND status="closed"', [data.event_id], (err, rows, fields) => {
+					if (err) {
+						console.log(error);
+						res.jsonp({
+							status: 'failed',
+							message: 'Cannot find event.',
+							res: []
+						});
+					} else {
+						if (rows.length > 0){
+								var event = rows[0];
+								var winner_part_id = event.winner_part_id;
+								query = connection.query('SELECT SUM(vote_amount) as total FROM tbl_votes WHERE part_id=?', [winner_part_id], (err, rows, fields) => {
+									if (!err) {
+										var total_amount = 0;
+
+										if (rows.length > 0){
+											total_amount = rows[0].total;
+										}
+										res.jsonp({
+											status: 'success',
+											message: 'success',
+											res: total_amount
+										});
+									} else {
+										res.jsonp({
+											status: 'failed',
+											message: 'query failed',
+											res: []
+										});
+									}
+								});
+						} else {
+							res.jsonp({
+								status: 'failed',
+								message: 'Cannot find event.',
+								res: []
+							});
+						}
+					}
+				});
+		}
+	});
+
+	router.post('/get_winner_fan_amount_by_event', (req, res) => {
+		var data = req.body; // maybe more carefully assemble this data
+		console.log('api_key', data.api_key);
+		if (data.api_key == API_KEY){
+				var query = connection.query('SELECT * FROM tbl_events WHERE id=? AND status="closed"', [data.event_id], (err, rows, fields) => {
+					if (err) {
+						console.log(error);
+						res.jsonp({
+							status: 'failed',
+							message: 'Cannot find event.',
+							res: []
+						});
+					} else {
+						if (rows.length > 0){
+								var event = rows[0];
+								var winner_fan_id = event.winner_fan_id;
+								console.log('winner_fan_id',winner_fan_id);
+								query = connection.query('SELECT SUM(vote_amount) as total FROM tbl_votes WHERE fan_id=?', [winner_fan_id], (err, rows, fields) => {
+									if (!err) {
+										var total_amount = 0;
+										console.log(rows);
+										if (rows.length > 0){
+											total_amount = rows[0].total;
+										}
+										res.jsonp({
+											status: 'success',
+											message: 'success',
+											res: total_amount
+										});
+									} else {
+										res.jsonp({
+											status: 'failed',
+											message: 'query failed',
+											res: []
+										});
+									}
+								});
+						} else {
+							res.jsonp({
+								status: 'failed',
+								message: 'Cannot find event.',
+								res: []
+							});
+						}
+					}
+				});
+		}
 	});
 
 	router.post('/get_participants', (req, res) => {
