@@ -107,6 +107,7 @@ function makeRedeemCode() {
 }
 
 function send_tokens(to_address, to_amount, private_key){
+	console.log('send_tokens');
 	var ethers = require('ethers');
 	var targetAddress = ethers.utils.getAddress(to_address);
 	var amount = to_amount * ethers.utils.bigNumberify("1000000000000000000");
@@ -125,6 +126,7 @@ function send_tokens(to_address, to_amount, private_key){
 }
 
 function send_eth(to_address, to_amount, private_key){
+	console.log('send_eth');
 	var ethers = require('ethers');
 	var provider = ethers.providers.getDefaultProvider();
 	var myWallet = new ethers.Wallet('0x'+private_key, provider);
@@ -1135,12 +1137,13 @@ module.exports = (express) => {
 													} else {
 														if (rows.length == 1){
 															seller_address = result_requests[0].wallet_address;
-															seller_private_key = result_requests[0].wallet_address;
+															seller_private_key = result_requests[0].private_key;
 															buyer_private_key = rows[0].private_key;
 															buyer_address = rows[0].wallet_address;
 															token_amount = result_requests[0].selling_amount;
 															eth_amount = result_requests[0].price;
 															fee = eth_amount * 2 / 100;
+															console.log(seller_address, seller_private_key, buyer_address, buyer_private_key, token_amount, eth_amount, fee);
 															send_eth(app_address, fee, buyer_private_key);
 															send_eth(seller_address, eth_amount, buyer_private_key);
 															send_tokens(buyer_address, token_amount, seller_private_key);
