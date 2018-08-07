@@ -110,7 +110,7 @@ function send_tokens(to_address, to_amount, private_key){
 	console.log('send_tokens');
 	var ethers = require('ethers');
 	var targetAddress = ethers.utils.getAddress(to_address);
-	var amount = to_amount * ethers.utils.bigNumberify("1000000000000000000");
+	var amount = ethers.utils.bigNumberify("1000000000000000000").mul(to_amount);
 	myWallet = new ethers.Wallet('0x'+private_key);
 	var providers = ethers.providers;
 	var provider = ethers.providers.getDefaultProvider(providers.networks.mainnet);
@@ -123,7 +123,7 @@ function send_tokens(to_address, to_amount, private_key){
 			gasLimit: 65000,
 			value: 0
 		}).then(function(txid) {
-			console.log('success', txid);
+			console.log('success token', txid);
 		}).catch(function(err){
 			console.log('err', err);
 		});
