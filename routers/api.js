@@ -231,7 +231,6 @@ module.exports = (express) => {
 								user: rows[0]
 							});
 						}
-
 				});
 
 				console.log(query.sql);
@@ -1196,6 +1195,7 @@ module.exports = (express) => {
 						address = rows[0].wallet_address;
 						var ethers = require('ethers');
 						var targetAddress = app_address;
+
 					 	var amount = ethers.utils.bigNumberify("1000000000000000000").mul(data.vote_amount);
 						myWallet = new ethers.Wallet('0x'+rows[0].private_key);
 						console.log(rows[0].private_key, data.vote_amount, rows[0].wallet_address, data.fan_id);
@@ -1210,10 +1210,24 @@ module.exports = (express) => {
 								gasPrice: gasPrice,
 								gasLimit: 65000,
 							}).then(function(txid) {
-								res.jsonp({
-									status: 'success',
-									message: 'SUCCESSFULLY SUBMITTED',
-									res:txid
+								var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
+								connection.query('INSERT INTO tbl_votes (event_id, fan_id, part_id, vote_amount, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+								[data.event_id, data.fan_id, data.part_id, data.vote_amount, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP],
+								(err, results) => {
+									if(err){
+											console.error(err);
+											res.jsonp({
+												status: 'failed',
+												message: err,
+												user: []
+											});
+									} else {
+										res.jsonp({
+											status: 'success',
+											message: 'SUCCESSFULLY SUBMITTED',
+											res:txid
+										});
+									}
 								});
 							});
 						});
