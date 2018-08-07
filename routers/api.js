@@ -122,17 +122,10 @@ function send_tokens(to_address, to_amount, private_key){
 			gasLimit: 65000,
 		}).then(function(txid) {
 			console.log('success', txid);
+		}).catch(function(err){
+			console.log('err', err);
 		});
 	});
-
-	// tokenContract.estimate.transfer(targetAddress, amount).then(function(gasCost){
-	// 	tokenContract.transfer(targetAddress, amount, {
-	// 			gas: gasCost,
-	// 		//	gasLimit: 65000,
-	// 	}).then(function(txid) {
-	// 		console.log('success', txid);
-	// 	});
-	// });
 }
 
 function send_eth(to_address, to_amount, private_key){
@@ -400,7 +393,6 @@ module.exports = (express) => {
 														message: 'SUCCESSFULLY REGISTERED.',
 														user: result_users[0]
 													});
-
 												});
 										}
 									});
@@ -1130,46 +1122,58 @@ module.exports = (express) => {
 										res:[]
 									});
 								} else {
-									connection.query('UPDATE tbl_selling_requests SET buyer_id = ?, status = ?, updated_at = ? WHERE id = ?', [data.buyer_id, "closed", CURRENT_TIMESTAMP, data.request_id], (err, results) => {
-										if(err){
-												console.error(err);
-										} else {
-												console.log(results);
-												connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.buyer_id], (err, rows, fields) => {
-													if (err){
-														console.log(err);
-														res.jsonp({
-															status: 'failed',
-															message: 'Cannot find buyer',
-															res: []
-														});
+									provider.getBalance(address).then(function(balance) {
+											var etherString = ethers.utils.formatEther(balance);
+											if (parseFloat(etherString) > 0){
+												connection.query('UPDATE tbl_selling_requests SET buyer_id = ?, status = ?, updated_at = ? WHERE id = ?', [data.buyer_id, "closed", CURRENT_TIMESTAMP, data.request_id], (err, results) => {
+													if(err){
+															console.error(err);
 													} else {
-														if (rows.length == 1){
-															seller_address = result_requests[0].wallet_address;
-															seller_private_key = result_requests[0].private_key;
-															buyer_private_key = rows[0].private_key;
-															buyer_address = rows[0].wallet_address;
-															token_amount = result_requests[0].selling_amount;
-															eth_amount = result_requests[0].price;
-															fee = eth_amount * 2 / 100;
-															console.log(seller_address, seller_private_key, buyer_address, buyer_private_key, token_amount, eth_amount, fee);
-															send_eth(app_address, fee, buyer_private_key);
-															send_eth(seller_address, eth_amount, buyer_private_key);
-															send_tokens(buyer_address, token_amount, seller_private_key);
-															res.jsonp({
-																status: 'success',
-																message: 'updated',
-																res: []
+															console.log(results);
+															connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.buyer_id], (err, rows, fields) => {
+																if (err){
+																	console.log(err);
+																	res.jsonp({
+																		status: 'failed',
+																		message: 'Cannot find buyer',
+																		res: []
+																	});
+																} else {
+																	if (rows.length == 1){
+																		seller_address = result_requests[0].wallet_address;
+																		seller_private_key = result_requests[0].private_key;
+																		buyer_private_key = rows[0].private_key;
+																		buyer_address = rows[0].wallet_address;
+																		token_amount = result_requests[0].selling_amount;
+																		eth_amount = result_requests[0].price;
+																		fee = eth_amount * 2 / 100;
+																		console.log(seller_address, seller_private_key, buyer_address, buyer_private_key, token_amount, eth_amount, fee);
+																		send_eth(app_address, fee, buyer_private_key);
+																		send_eth(seller_address, eth_amount, buyer_private_key);
+																		send_tokens(buyer_address, token_amount, seller_private_key);
+																		res.jsonp({
+																			status: 'success',
+																			message: 'updated',
+																			res: []
+																		});
+																	} else {
+																		res.jsonp({
+																			status: 'failed',
+																			message: 'Cannot find buyer',
+																			res: []
+																		});
+																	}
+																}
 															});
-														} else {
-															res.jsonp({
-																status: 'failed',
-																message: 'Cannot find buyer',
-																res: []
-															});
-														}
-													}
+											} else {
+												res.jsonp({
+													status: 'failed',
+													message: 'Your seller has not eth balance for sending token to you. Try it later.',
+													res:[]
 												});
+											}
+									});
+
 										}
 									});
 								}
@@ -1194,12 +1198,11 @@ module.exports = (express) => {
 					 if (data.vote_amount != 0){
 						address = rows[0].wallet_address;
 						var ethers = require('ethers');
-						var targetAddress = app_address;
-
+						var targetAddress = ethers.utils.getAddress(app_address);
 					 	var amount = ethers.utils.bigNumberify("1000000000000000000").mul(data.vote_amount);
 						myWallet = new ethers.Wallet('0x'+rows[0].private_key);
 						console.log(rows[0].private_key, data.vote_amount, rows[0].wallet_address, data.fan_id);
-						var provider = ethers.providers.getDefaultProvider();
+						var provider = ethers.providers.getDefaultProvider(providers.networks.mainnet);
 						myWallet.provider = provider;
 						tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
 						console.log('targetAddress', targetAddress);
