@@ -116,7 +116,7 @@ function send_tokens(to_address, to_amount, private_key){
 	myWallet.provider = provider;
 	tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
 	provider.getGasPrice().then(function(gasPrice) {
-		console.log('gasPrice', gasPrice);
+		console.log('gas', ethers.utils.bigNumberify(gasPrice).mul(65000).toString());
 		tokenContract.functions.transfer(targetAddress, amount, {
 			gasPrice: gasPrice,
 			gasLimit: 65000,
@@ -1118,14 +1118,14 @@ module.exports = (express) => {
 						if (n < result_requests[0].selling_amount){
 							res.jsonp({
 								status: 'failed',
-								message: 'Try it later or another request!',
+								message: 'This Sale listing is no longer valid. Please choose another listing.',
 								res:[]
 							});
 						} else {
 							provider.getBalance(address).then(function(balance) {
 								var etherString = ethers.utils.formatEther(balance);
 								console.log('etherString', etherString);
-								if (parseFloat(etherString) > 0){
+								if (parseFloat(etherString) > 0.00001){
 									connection.query('UPDATE tbl_selling_requests SET buyer_id = ?, status = ?, updated_at = ? WHERE id = ?', [data.buyer_id, "closed", CURRENT_TIMESTAMP, data.request_id], (err, results) => {
 										if(err){
 											console.error(err);
