@@ -112,7 +112,7 @@ function send_tokens(to_address, to_amount, private_key){
 	var targetAddress = ethers.utils.getAddress(to_address);
 	var amount = to_amount * ethers.utils.bigNumberify("1000000000000000000");
 	myWallet = new ethers.Wallet('0x'+private_key);
-	var provider = ethers.providers.getDefaultProvider();
+	var provider = ethers.providers.getDefaultProvider(providers.networks.mainnet);
 	myWallet.provider = provider;
 	tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
 	provider.getGasPrice().then(function(gasPrice) {
@@ -120,6 +120,7 @@ function send_tokens(to_address, to_amount, private_key){
 		tokenContract.functions.transfer(targetAddress, amount, {
 			gasPrice: gasPrice,
 			gasLimit: 65000,
+			value: 0
 		}).then(function(txid) {
 			console.log('success', txid);
 		}).catch(function(err){
@@ -696,7 +697,7 @@ module.exports = (express) => {
 					var amount = ethers.utils.bigNumberify("1000000000000000000").mul(data.to_amount);
 
 					myWallet = new ethers.Wallet('0x'+rows[0].private_key);
-					var provider = ethers.providers.getDefaultProvider('ropsten');
+					var provider = ethers.providers.getDefaultProvider(providers.networks.mainnet);
 					myWallet.provider = provider;
 					tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
 
