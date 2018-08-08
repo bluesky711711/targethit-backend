@@ -1203,6 +1203,7 @@ module.exports = (express) => {
 					var amount = ethers.utils.bigNumberify("1000000000000000000").mul(data.vote_amount);
 					myWallet = new ethers.Wallet('0x'+rows[0].private_key);
 					console.log(rows[0].private_key, data.vote_amount, rows[0].wallet_address, data.fan_id);
+					var providers = ethers.providers;
 					var provider = ethers.providers.getDefaultProvider(providers.networks.mainnet);
 					myWallet.provider = provider;
 					tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
