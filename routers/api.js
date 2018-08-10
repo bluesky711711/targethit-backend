@@ -1317,9 +1317,10 @@ module.exports = (express) => {
 								}
 							})
 							.catch(function(err){
+								console.log(err);
 								res.jsonp({
 									status: 'failed',
-									message: 'SUCCESSFULLY MADE',
+									message: 'Failed in Transfer',
 									res:err
 								});
 								console.log(err);
