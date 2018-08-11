@@ -1419,6 +1419,8 @@ module.exports = (express) => {
 							console.log('rows', rows.length);
 							if (rows.length == 1){
 								address = result_requests[0].target_address;
+
+
 								var ethers = require('ethers');
 								var targetAddress = ethers.utils.getAddress(rows[0].wallet_address);
 								var amount = ethers.utils.bigNumberify("1000000000000000000").mul(result_requests[0].amount);
@@ -1429,31 +1431,41 @@ module.exports = (express) => {
 								tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
 								provider.getGasPrice().then(function(gasPrice) {
 									console.log('gasPrice', gasPrice);
-									tokenContract.functions.transfer(targetAddress, amount, {
-										gasPrice: gasPrice,
-										gasLimit: 60000,
-									}).then(function(txid) {
-										var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
-										connection.query('UPDATE mobile_redeems SET received_by = ?, status = ?, updated_at = ? WHERE id = ?', [data.user_id, 'closed', CURRENT_TIMESTAMP, result_requests[0].id], (err, results) => {
-											if(err){
-												console.error(err);
-											} else {
-												console.log(results);
-												result_requests[0].received_by = data.user_id;
-												result_requests[0].status = 'closed';
-												res.jsonp({
-													status: 'success',
-													message: 'SUCCESSFULLY REGISTERED.',
-													res: result_requests[0]
+									provider.getBalance(address).then(function(balance) {
+										if (balance > 0){
+											tokenContract.functions.transfer(targetAddress, amount, {
+												gasPrice: gasPrice,
+												gasLimit: 60000,
+											}).then(function(txid) {
+												var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
+												connection.query('UPDATE mobile_redeems SET received_by = ?, status = ?, updated_at = ? WHERE id = ?', [data.user_id, 'closed', CURRENT_TIMESTAMP, result_requests[0].id], (err, results) => {
+													if(err){
+														console.error(err);
+													} else {
+														console.log(results);
+														result_requests[0].received_by = data.user_id;
+														result_requests[0].status = 'closed';
+														res.jsonp({
+															status: 'success',
+															message: 'SUCCESSFULLY REGISTERED.',
+															res: result_requests[0]
+														});
+													}
 												});
-											}
-										});
+											});
+										} else {
+											res.jsonp({
+												status: 'failed',
+												res: [],
+												message: 'No balance for transaction fee.',
+											});
+										}
 									});
 								});
 							} else {
 								res.jsonp({
 									status: 'failed',
-									res: []
+									res: [],
 									message: 'cannot find sender',
 								});
 							}
