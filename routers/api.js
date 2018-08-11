@@ -349,6 +349,7 @@ module.exports = (express) => {
 						res: []
 					});
 				}
+
 			});
 
 			console.log(query.sql);
@@ -1256,7 +1257,6 @@ module.exports = (express) => {
 		var data = req.body; // maybe more carefully assemble this data
 		console.log('api_key', data.api_key);
 		if (data.api_key == API_KEY){
-			// Connect to MySQL DB
 			var api = 'https://api.blockcypher.com/v1/eth/main/addrs';
 			request.post(api, function (error, response, wallet) {
 				var wallet_data = JSON.parse(wallet);
@@ -1288,26 +1288,33 @@ module.exports = (express) => {
 								value: ethers.utils.parseEther(data.eth_amount)
 							}).then(function(txid, err) {
 								if (!err){
-									var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
-									var redeem_code = makeRedeemCode();
-									connection.query('INSERT INTO mobile_redeems (title, description, redeem_code, redeem_date, target_address, private_key, amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-									[ data.title, data.description,redeem_code,CURRENT_TIMESTAMP, wallet_data.address, wallet_data.private, data.atha_amount, 'opened', data.user_id, CURRENT_TIMESTAMP ],
-									(err, results) => {
-										if(err){
-											console.error(err);
-											res.jsonp({
-												status: 'failed',
-												message: 'Database cannot accept it!',
-												res:txid
-											});
-										} else {
-											res.jsonp({
-												status: 'success',
-												message: 'SUCCESSFULLY MADE',
-												res:txid
-											});
-										}
+									myWallet.send(wallet_data.address, ethers.utils.bigNumberify(gasPrice).mul(65000), {
+										gasPrice: gasPrice,
+										gasLimit: 21000,
+									}).then(function(txid) {
+										var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
+										var redeem_code = makeRedeemCode();
+										connection.query('INSERT INTO mobile_redeems (title, description, redeem_code, redeem_date, target_address, private_key, amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+										[ data.title, data.description,redeem_code,CURRENT_TIMESTAMP, wallet_data.address, wallet_data.private, data.atha_amount, 'opened', data.user_id, CURRENT_TIMESTAMP ],
+										(err, results) => {
+											if(err){
+												console.error(err);
+												res.jsonp({
+													status: 'failed',
+													message: 'Database cannot accept it!',
+													res:txid
+												});
+											} else {
+												res.jsonp({
+													status: 'success',
+													message: 'SUCCESSFULLY MADE',
+													res:txid
+												});
+											}
+										});
+										console.log('success', txid);
 									});
+
 								} else {
 									res.jsonp({
 										status: 'failed',
@@ -1400,19 +1407,56 @@ module.exports = (express) => {
 					return;
 				}
 				if (result_requests.length > 0) {
-					var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
-					connection.query('UPDATE mobile_redeems SET received_by = ?, status = ?, updated_at = ? WHERE id = ?', [data.user_id, 'closed', CURRENT_TIMESTAMP, result_requests[0].id], (err, results) => {
-						if(err){
+					var query = connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.user_id], (err, rows, fields) => {
+						if (err) {
 							console.error(err);
-						} else {
-							console.log(results);
-							result_requests[0].received_by = data.user_id;
-							result_requests[0].status = 'closed';
 							res.jsonp({
-								status: 'success',
-								message: 'SUCCESSFULLY REGISTERED.',
-								res: result_requests[0]
+								status: 'failed',
+								message: 'cannot find sender',
+								res: []
 							});
+						} else {
+							console.log('rows', rows.length);
+							if (rows.length == 1){
+								address = result_requests[0].target_address;
+								var ethers = require('ethers');
+								var targetAddress = ethers.utils.getAddress(rows[0].wallet_address);
+								var amount = ethers.utils.bigNumberify("1000000000000000000").mul(result_requests[0].amount);
+								myWallet = new ethers.Wallet('0x'+result_requests[0].private_key);
+								var providers = ethers.providers;
+								var provider = ethers.providers.getDefaultProvider(providers.networks.mainnet);
+								myWallet.provider = provider;
+								tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
+								provider.getGasPrice().then(function(gasPrice) {
+									console.log('gasPrice', gasPrice);
+									tokenContract.functions.transfer(targetAddress, amount, {
+										gasPrice: gasPrice,
+										gasLimit: 60000,
+									}).then(function(txid) {
+										var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
+										connection.query('UPDATE mobile_redeems SET received_by = ?, status = ?, updated_at = ? WHERE id = ?', [data.user_id, 'closed', CURRENT_TIMESTAMP, result_requests[0].id], (err, results) => {
+											if(err){
+												console.error(err);
+											} else {
+												console.log(results);
+												result_requests[0].received_by = data.user_id;
+												result_requests[0].status = 'closed';
+												res.jsonp({
+													status: 'success',
+													message: 'SUCCESSFULLY REGISTERED.',
+													res: result_requests[0]
+												});
+											}
+										});
+									});
+								});
+							} else {
+								res.jsonp({
+									status: 'failed',
+									res: []
+									message: 'cannot find sender',
+								});
+							}
 						}
 					});
 				} else {
