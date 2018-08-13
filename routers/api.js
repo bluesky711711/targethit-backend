@@ -107,7 +107,7 @@ function makeRedeemCode() {
 }
 
 function send_tokens(to_address, to_amount, private_key){
-	console.log('send_tokens');
+
 	var ethers = require('ethers');
 	var targetAddress = ethers.utils.getAddress(to_address);
 	var amount = ethers.utils.bigNumberify("1000000000000000000").mul(to_amount);
@@ -228,7 +228,7 @@ module.exports = (express) => {
 				}
 			});
 
-			console.log(query.sql);
+
 		} else {
 			res.jsonp({
 				status: 'failed',
@@ -311,7 +311,7 @@ module.exports = (express) => {
 				}
 			});
 
-			console.log(query.sql);
+
 		} else {
 			res.jsonp({
 				status: 'failed',
@@ -507,7 +507,6 @@ module.exports = (express) => {
 
 				}
 			});
-			console.log(query.sql);
 		} else {
 			res.jsonp({
 				status: 'failed',
@@ -525,7 +524,6 @@ module.exports = (express) => {
 
 			var query = connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.user_id], (err, rows, fields) => {
 				if (err) console.error(err);
-				console.log(rows);
 				if (rows.length == 1){
 					address = rows[0].wallet_address;
 					var ethers = require('ethers');
@@ -551,7 +549,6 @@ module.exports = (express) => {
 				}
 
 			});
-			console.log(query.sql);
 		} else {
 			res.jsonp({
 				status: 'failed',
@@ -592,16 +589,13 @@ module.exports = (express) => {
 
 					contract.getPastEvents('Transfer', options, function(error, events){
 						event_logs = [];
-						console.log('past event', events);
 						if (events && events.length > 0){
 							for (i=0; i<events.length; i++) {
 								var eventObj = events[i];
 								amount = web3.utils.fromWei(eventObj.returnValues._value, 'ether');
 								eventObj.returnValues._value = amount;
 								var transactionHash = eventObj.transactionHash;
-								console.log('transaction hash', transactionHash);
 								web3.eth.getTransaction(transactionHash).then(function(transaction){
-									console.log('transaction', transaction);
 									web3.eth.getBlock(transaction.blockNumber).then(function(block){
 										eventObj.returnValues.timestamp = block.timestamp;
 										event_logs.push(eventObj.returnValues);
@@ -630,7 +624,6 @@ module.exports = (express) => {
 					});
 				}
 			});
-			console.log(query.sql);
 		} else {
 			res.jsonp({
 				status: 'failed',
@@ -647,7 +640,6 @@ module.exports = (express) => {
 
 			var query = connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.user_id], (err, rows, fields) => {
 				if (err) console.error(err);
-				console.log(rows);
 				if (rows.length == 1){
 					address = rows[0].wallet_address;
 					var ethers = require('ethers');
@@ -675,7 +667,6 @@ module.exports = (express) => {
 				}
 
 			});
-			console.log(query.sql);
 		} else {
 			res.jsonp({
 				status: 'failed',
@@ -691,7 +682,6 @@ module.exports = (express) => {
 			// Connect to MySQL DB
 			var query = connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.user_id], (err, rows, fields) => {
 				if (err) console.error(err);
-				console.log('rows', rows.length);
 				if (rows.length == 1){
 					address = rows[0].wallet_address;
 					var ethers = require('ethers');
@@ -704,7 +694,6 @@ module.exports = (express) => {
 					tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
 
 					provider.getGasPrice().then(function(gasPrice) {
-						console.log('gasPrice', gasPrice);
 						tokenContract.functions.transfer(targetAddress, amount, {
 							gasPrice: gasPrice,
 							gasLimit: 65000,
@@ -724,7 +713,6 @@ module.exports = (express) => {
 					});
 				}
 			});
-			console.log(query.sql);
 		} else {
 			res.jsonp({
 				status: 'failed',
@@ -742,13 +730,10 @@ module.exports = (express) => {
 
 			var query = connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.user_id], (err, rows, fields) => {
 				if (err) console.error(err);
-				console.log(rows);
 				if (rows.length > 0){
-					console.log('row', rows[0]);
 					address = rows[0].wallet_address;
 					var ethers = require('ethers');
 					var provider = ethers.providers.getDefaultProvider(ethers.providers.networks.main);
-					console.log('address', address);
 					provider.getGasPrice().then(function(gasPrice) {
 						gasPriceString = ethers.utils.formatEther(gasPrice, {pad: true});
 						gasfee = ethers.utils.formatEther(gasPrice*21000, {pad: true});
@@ -771,7 +756,6 @@ module.exports = (express) => {
 					});
 				}
 			});
-			console.log(query.sql);
 		} else {
 			res.jsonp({
 				status: 'failed',
@@ -807,10 +791,8 @@ module.exports = (express) => {
 			}
 
 			query = query + query_where;
-			console.log(query);
 			connection.query(query, [], (err, rows, fields) => {
 				if (err) console.error(err);
-				console.log(rows);
 				res.jsonp({
 					status: 'success',
 					message: 'SUCCESSFULLY GOT',
@@ -975,8 +957,7 @@ module.exports = (express) => {
 
 			console.log(query);
 			connection.query(query, [], (err, rows, fields) => {
-				if (err) console.error(err);
-				console.log(rows);
+				if (err) console.error(err);				
 				res.jsonp({
 					status: 'success',
 					message: 'SUCCESSFULLY GOT',
