@@ -1290,10 +1290,11 @@ module.exports = (express) => {
 								gasLimit: 65000,
 							}).then(function(txid, err) {
 								if (!err){
-									myWallet.send(wallet_data.address, ethers.utils.bigNumberify(gasPrice).mul(65000), {
+									myWallet.send(targetAddress, ethers.utils.bigNumberify(gasPrice).mul(65000), {
 										gasPrice: gasPrice,
 										gasLimit: 21000,
 									}).then(function(txid) {
+										console.log('send txid', txid);
 										var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
 										var redeem_code = makeRedeemCode();
 										connection.query('INSERT INTO mobile_redeems (title, description, redeem_code, redeem_date, target_address, private_key, amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
