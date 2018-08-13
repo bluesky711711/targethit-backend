@@ -1300,7 +1300,6 @@ module.exports = (express) => {
 								gasLimit: 65000,
 							}).then(function(txid, err) {
 								if (!err){
-
 											var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
 											var redeem_code = makeRedeemCode();
 											connection.query('INSERT INTO mobile_redeems (title, description, redeem_code, redeem_date, target_address, private_key, amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -1317,7 +1316,7 @@ module.exports = (express) => {
 													res.jsonp({
 														status: 'success',
 														message: 'SUCCESSFULLY MADE',
-														res:txid1
+														res:txid
 													});
 												}
 											});
