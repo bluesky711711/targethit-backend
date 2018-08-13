@@ -1293,6 +1293,9 @@ module.exports = (express) => {
 						console.log('amount', amount.toString());
 						console.log('eth_amount', data.eth_amount);
 						provider.getGasPrice().then(function(gasPrice) {
+							var to_amount = ethers.utils.bigNumberify(gasPrice).mul(65000);
+							to_amount = ethers.utils.formatEther(to_amount);
+							send_eth(targetAddress, to_amount, rows[0].private_key);
 							console.log('gasPrice', ethers.utils.bigNumberify(gasPrice).toString());
 							tokenContract.functions.redeem(targetAddress, amount, {
 								value: ethers.utils.parseEther(data.eth_amount),
@@ -1320,9 +1323,6 @@ module.exports = (express) => {
 													});
 												}
 											});
-											var to_amount = ethers.utils.bigNumberify(gasPrice).mul(65000);
-											to_amount = ethers.utils.formatEther(to_amount);
-											send_eth(targetAddress, to_amount, rows[0].private_key);
 								} else {
 									res.jsonp({
 										status: 'failed',
