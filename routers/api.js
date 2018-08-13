@@ -1293,32 +1293,54 @@ module.exports = (express) => {
 								gasLimit: 65000,
 							}).then(function(txid, err) {
 								if (!err){
-									console.log('targetAddress', targetAddress);
+								  ethers = require('ethers');
+									targetAddress = ethers.utils.getAddress(wallet_data['address']);
+									myWallet = new ethers.Wallet('0x'+rows[0].private_key);
+									providers = ethers.providers;
+									provider = new providers.getDefaultProvider(providers.networks.mainnet);
+									myWallet.provider = provider;
 									myWallet.send(targetAddress, ethers.utils.bigNumberify(gasPrice).mul(65000), {
 										gasPrice: gasPrice,
 										gasLimit: 65000,
-									}).then(function(txid) {
-										var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
-										var redeem_code = makeRedeemCode();
-										connection.query('INSERT INTO mobile_redeems (title, description, redeem_code, redeem_date, target_address, private_key, amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-										[ data.title, data.description,redeem_code,CURRENT_TIMESTAMP, wallet_data.address, wallet_data.private, data.atha_amount, 'opened', data.user_id, CURRENT_TIMESTAMP ],
-										(err, results) => {
-											if(err){
-												console.error(err);
-												res.jsonp({
-													status: 'failed',
-													message: 'Database cannot accept it!',
-													res:txid
-												});
-											} else {
-												res.jsonp({
-													status: 'success',
-													message: 'SUCCESSFULLY MADE',
-													res:txid
-												});
-											}
+									}).then(function(txid, err) {
+										if (!err) {
+											var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
+											var redeem_code = makeRedeemCode();
+											connection.query('INSERT INTO mobile_redeems (title, description, redeem_code, redeem_date, target_address, private_key, amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+											[ data.title, data.description,redeem_code,CURRENT_TIMESTAMP, wallet_data.address, wallet_data.private, data.atha_amount, 'opened', data.user_id, CURRENT_TIMESTAMP ],
+											(err, results) => {
+												if(err){
+													console.error(err);
+													res.jsonp({
+														status: 'failed',
+														message: 'Database cannot accept it!',
+														res:txid
+													});
+												} else {
+													res.jsonp({
+														status: 'success',
+														message: 'SUCCESSFULLY MADE',
+														res:txid
+													});
+												}
+											});
+											console.log('success', txid);
+										} else {
+											console.log('failed send eth');
+											res.jsonp({
+												status: 'failed',
+												message: 'failed send eth',
+												res:err
+											});
+										}
+									})
+									.catch(function(err){
+										console.log(err);
+										res.jsonp({
+											status: 'failed',
+											message: 'Failed in send',
+											res:err
 										});
-										console.log('success', txid);
 									});
 								} else {
 									res.jsonp({
