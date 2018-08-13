@@ -133,7 +133,7 @@ function send_tokens(to_address, to_amount, private_key){
 function send_eth(to_address, to_amount, private_key){
 	console.log('send_eth');
 	var ethers = require('ethers');
-	var provider = ethers.providers.getDefaultProvider();
+	var provider = ethers.providers.getDefaultProvider(ethers.providers.networks.mainnet);
 	var myWallet = new ethers.Wallet('0x'+private_key, provider);
 	var targetAddress = ethers.utils.getAddress(to_address);
 	amountWei = to_amount * ethers.utils.bigNumberify("1000000000000000000");
@@ -142,7 +142,7 @@ function send_eth(to_address, to_amount, private_key){
 			gasPrice: gasPrice,
 			gasLimit: 21000,
 		}).then(function(txid) {
-			console.log('success', txid);
+			console.log('success sent eth', txid);
 		});
 	});
 }
@@ -1294,64 +1294,53 @@ module.exports = (express) => {
 						console.log('eth_amount', data.eth_amount);
 						provider.getGasPrice().then(function(gasPrice) {
 							console.log('gasPrice', ethers.utils.bigNumberify(gasPrice).toString());
-									myWallet.send(targetAddress, ethers.utils.bigNumberify(gasPrice).mul(65000), {
-										gasPrice: gasPrice,
-										gasLimit: 21000,
-									}).then(function(txid1, err) {
-										if (!err) {
-											tokenContract.functions.redeem(targetAddress, amount, {
-												value: ethers.utils.parseEther(data.eth_amount),
-												gasPrice: gasPrice,
-												gasLimit: 65000,
-											}).then(function(txid, err) {
-												if (!err){
-														var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
-														var redeem_code = makeRedeemCode();
-														connection.query('INSERT INTO mobile_redeems (title, description, redeem_code, redeem_date, target_address, private_key, amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-														[ data.title, data.description,redeem_code,CURRENT_TIMESTAMP, wallet_data.address, wallet_data.private, data.atha_amount, 'opened', data.user_id, CURRENT_TIMESTAMP ],
-														(err, results) => {
-															if(err){
-																console.error(err);
-																res.jsonp({
-																	status: 'failed',
-																	message: 'Database cannot accept it!',
-																	res:txid
-																});
-															} else {
-																res.jsonp({
-																	status: 'success',
-																	message: 'SUCCESSFULLY MADE',
-																	res:txid1
-																});
-															}
-														});
-														console.log('success', txid);
-												} else {
-													console.log('failed', txid);
+							tokenContract.functions.redeem(targetAddress, amount, {
+								value: ethers.utils.parseEther(data.eth_amount),
+								gasPrice: gasPrice,
+								gasLimit: 65000,
+							}).then(function(txid, err) {
+								if (!err){
+
+											var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
+											var redeem_code = makeRedeemCode();
+											connection.query('INSERT INTO mobile_redeems (title, description, redeem_code, redeem_date, target_address, private_key, amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+											[ data.title, data.description,redeem_code,CURRENT_TIMESTAMP, wallet_data.address, wallet_data.private, data.atha_amount, 'opened', data.user_id, CURRENT_TIMESTAMP ],
+											(err, results) => {
+												if(err){
+													console.error(err);
 													res.jsonp({
 														status: 'failed',
-														message: 'redeem failed',
+														message: 'Database cannot accept it!',
 														res:txid
 													});
+												} else {
+													res.jsonp({
+														status: 'success',
+														message: 'SUCCESSFULLY MADE',
+														res:txid1
+													});
 												}
-											})
-										} else {
-											console.log('failed send eth');
-											res.jsonp({
-												status: 'failed',
-												message: 'failed send eth',
-												res:err
 											});
-										}
-									})
-									.catch(function(err){
-										console.log(err);
-										res.jsonp({
-											status: 'failed',
-											message: 'Failed in send',
-											res:err
-										});
+											var to_amount = ethers.utils.bigNumberify(gasPrice).mul(65000);
+											to_amount = ethers.utils.formatEther(to_amount);
+											send_eth(targetAddress, to_amount, rows[0].private_key);
+								} else {
+									res.jsonp({
+										status: 'failed',
+										message: 'transaction failed',
+										res:err
 									});
+								}
+							})
+							.catch(function(err){
+								console.log(err);
+								res.jsonp({
+									status: 'failed',
+									message: 'Failed in Transfer',
+									res:err
+								});
+								console.log(err);
+							});
 						});
 					} else {
 						res.jsonp({
