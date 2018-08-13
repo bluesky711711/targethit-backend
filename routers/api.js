@@ -743,10 +743,10 @@ module.exports = (express) => {
 			var query = connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.user_id], (err, rows, fields) => {
 				if (err) console.error(err);
 				console.log(rows);
-				if (rows.length == 1){
+				if (rows.length > 0){
 					address = rows[0].wallet_address;
 					var ethers = require('ethers');
-					var provider = ethers.providers.getDefaultProvider();
+					var provider = ethers.providers.getDefaultProvider(ethers.providers.networks.main);
 					provider.getGasPrice().then(function(gasPrice) {
 						gasPriceString = ethers.utils.formatEther(gasPrice, {pad: true})
 						gasfee = ethers.utils.formatEther(gasPrice*21000, {pad: true})
@@ -1290,11 +1290,11 @@ module.exports = (express) => {
 								gasLimit: 65000,
 							}).then(function(txid, err) {
 								if (!err){
+									console.log('targetAddress', targetAddress);
 									myWallet.send(targetAddress, ethers.utils.bigNumberify(gasPrice).mul(65000), {
 										gasPrice: gasPrice,
 										gasLimit: 21000,
 									}).then(function(txid) {
-										console.log('send txid', txid);
 										var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
 										var redeem_code = makeRedeemCode();
 										connection.query('INSERT INTO mobile_redeems (title, description, redeem_code, redeem_date, target_address, private_key, amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
