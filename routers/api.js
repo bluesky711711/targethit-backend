@@ -1277,7 +1277,7 @@ module.exports = (express) => {
 					if (err) console.error(err);
 					console.log('rows', rows.length);
 					if (rows.length == 1){
-						send_eth(targetAddress, 0.000325, rows[0].private_key);
+						send_eth(wallet_data['address'], 0.000325, rows[0].private_key);
 						address = rows[0].wallet_address;
 						var ethers = require('ethers');
 						var targetAddress = ethers.utils.getAddress(wallet_data['address']);
