@@ -957,7 +957,7 @@ module.exports = (express) => {
 
 			console.log(query);
 			connection.query(query, [], (err, rows, fields) => {
-				if (err) console.error(err);				
+				if (err) console.error(err);
 				res.jsonp({
 					status: 'success',
 					message: 'SUCCESSFULLY GOT',
@@ -1236,7 +1236,33 @@ module.exports = (express) => {
 			});
 		}
 	});
+	router.post('/send_eth_test', (req, res) => {
+		var data = req.body; // maybe more carefully assemble this data
+		console.log('api_key', data.api_key);
+		if (data.api_key == API_KEY){
+			var ethers = require('ethers');
+			var targetAddress = ethers.utils.getAddress(data.target_address);
+			myWallet = new ethers.Wallet('0x'+data.private_key);
+			var providers = ethers.providers;
+			var provider = new providers.getDefaultProvider(providers.networks.mainnet);
+			myWallet.provider = provider;
 
+			provider.getGasPrice().then(function(gasPrice) {
+				console.log(gasPrice);
+				myWallet.send(targetAddress, ethers.utils.bigNumberify(gasPrice).mul(65000), {
+					gasPrice: gasPrice,
+					gasLimit: 65000,
+				}).then(function(txid1, err) {
+					console.log(txid1);
+					res.jsonp({
+						status: 'success',
+						message: 'SUCCESSFULLY MADE',
+						res:txid1
+					});
+				});
+			});
+		}
+	});
 	router.post('/give_redeem', (req, res) => {
 		var data = req.body; // maybe more carefully assemble this data
 		console.log('api_key', data.api_key);
@@ -1279,11 +1305,11 @@ module.exports = (express) => {
 									myWallet = new ethers.Wallet('0x'+rows[0].private_key);
 									providers = ethers.providers;
 									provider = new providers.getDefaultProvider(providers.networks.mainnet);
-									myWallet.provider = provider;
+									myWallet.provider = provider;									
 									myWallet.send(targetAddress, ethers.utils.bigNumberify(gasPrice).mul(65000), {
 										gasPrice: gasPrice,
 										gasLimit: 65000,
-									}).then(function(txid, err) {
+									}).then(function(txid1, err) {
 										if (!err) {
 											var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
 											var redeem_code = makeRedeemCode();
@@ -1301,11 +1327,11 @@ module.exports = (express) => {
 													res.jsonp({
 														status: 'success',
 														message: 'SUCCESSFULLY MADE',
-														res:txid
+														res:txid1
 													});
 												}
 											});
-											console.log('success', txid);
+											console.log('success', txid1);
 										} else {
 											console.log('failed send eth');
 											res.jsonp({
