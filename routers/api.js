@@ -1279,7 +1279,7 @@ module.exports = (express) => {
 
 						var atha_amount = data.atha_amount * 102 / 100;
 						console.log('atha_amount', atha_amount);
-						var amount = ethers.utils.bigNumberify("1000000000000000000").mul(atha_amount);
+						var amount = atha_amount;
 						console.log('amount', amount.toString());
 						console.log('eth_amount', data.eth_amount);
 						provider.getGasPrice().then(function(gasPrice) {
