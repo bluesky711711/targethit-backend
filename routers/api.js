@@ -744,6 +744,7 @@ module.exports = (express) => {
 				if (err) console.error(err);
 				console.log(rows);
 				if (rows.length > 0){
+					console.log('row', rows[0]);
 					address = rows[0].wallet_address;
 					var ethers = require('ethers');
 					var provider = ethers.providers.getDefaultProvider(ethers.providers.networks.main);
