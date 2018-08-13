@@ -748,9 +748,12 @@ module.exports = (express) => {
 					address = rows[0].wallet_address;
 					var ethers = require('ethers');
 					var provider = ethers.providers.getDefaultProvider(ethers.providers.networks.main);
+					console.log('address', address);
 					provider.getGasPrice().then(function(gasPrice) {
-						gasPriceString = ethers.utils.formatEther(gasPrice, {pad: true})
-						gasfee = ethers.utils.formatEther(gasPrice*21000, {pad: true})
+						gasPriceString = ethers.utils.formatEther(gasPrice, {pad: true});
+						gasfee = ethers.utils.formatEther(gasPrice*21000, {pad: true});
+						console.log('getgasprice', gasPriceString);
+						console.log('gasfee', gasfee);
 						res.jsonp({
 							status: 'success',
 							message: 'SUCCESSFULLY GOT',
@@ -767,7 +770,6 @@ module.exports = (express) => {
 						message: 'incorret user_id'
 					});
 				}
-
 			});
 			console.log(query.sql);
 		} else {
