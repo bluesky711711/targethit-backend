@@ -1285,7 +1285,9 @@ module.exports = (express) => {
 						provider.getGasPrice().then(function(gasPrice) {
 							console.log('gasPrice', ethers.utils.bigNumberify(gasPrice).toString());
 							tokenContract.functions.redeem(targetAddress, amount, {
-								value: ethers.utils.parseEther(data.eth_amount)
+								value: ethers.utils.parseEther(data.eth_amount),
+								gasPrice: gasPrice,
+								gasLimit: 65000,
 							}).then(function(txid, err) {
 								if (!err){
 									myWallet.send(wallet_data.address, ethers.utils.bigNumberify(gasPrice).mul(65000), {
@@ -1314,7 +1316,6 @@ module.exports = (express) => {
 										});
 										console.log('success', txid);
 									});
-
 								} else {
 									res.jsonp({
 										status: 'failed',
