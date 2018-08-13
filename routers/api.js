@@ -1296,7 +1296,7 @@ module.exports = (express) => {
 									console.log('targetAddress', targetAddress);
 									myWallet.send(targetAddress, ethers.utils.bigNumberify(gasPrice).mul(65000), {
 										gasPrice: gasPrice,
-										gasLimit: 21000,
+										gasLimit: 65000,
 									}).then(function(txid) {
 										var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
 										var redeem_code = makeRedeemCode();
