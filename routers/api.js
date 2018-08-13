@@ -1406,6 +1406,7 @@ module.exports = (express) => {
 					});
 					return;
 				}
+				console.log('result_requests', result_requests);
 				if (result_requests.length > 0) {
 					var query = connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.user_id], (err, rows, fields) => {
 						if (err) {
