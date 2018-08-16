@@ -2,6 +2,9 @@
 const API_KEY = "ATHA_API_KEY_1.0";
 var app_address = '0x3a9a6720B687a4F2Fc8e2d82a0B896C505340f62';
 var app_private_key = '6749694b58b2c38fd900b6b71f9d45f5da2c8db42479dd57089b5b69d7643817';
+
+var redeemer_key = '43bcfa4d25a4df8cbb4f0b5b179cce071681fddaa088cb8175504ad284b7af78';
+
 var request = require('request');
 var mysql       = require('mysql');
 var credentials;
@@ -14,58 +17,19 @@ try{
 connection  = mysql.createConnection(credentials);
 
 
-var ATHA_CONTRACT_ADDRESS = '0x7eBb8e2e72891d08C495433075C64c223623E809';
+var ATHA_CONTRACT_ADDRESS = '0x748850413d78Bd2f5189E8F5965cE060f7A9A3a9';
 const ATHA_ABI = [{"constant":false,"inputs":[{"name":"newSellPrice","type":"uint256"},{"name":"newBuyPrice","type":"uint256"}],
 "name":"setPrices","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
 {"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
 {"constant":false,"inputs":[],"name":"stop","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
 {"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve",
-"outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
-{"constant":false,"inputs":[{"name":"target","type":"address"},{"name":"token_amount","type":"uint256"}],
-"name":"redeem","outputs":[{"name":"amount","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},
-{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},
-{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
-{"constant":false,"inputs":[{"name":"_value","type":"uint256"}],"name":"burn","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":true,"inputs":[],"name":"sellPrice","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
-{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
-{"constant":true,"inputs":[],"name":"stopped","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},
-{"constant":false,"inputs":[{"name":"target","type":"address"},
-{"name":"mintedAmount","type":"uint256"}],"name":"mintToken","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":true,"inputs":[],"name":"buyPrice","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
-{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
-{"constant":false,"inputs":[],"name":"buy","outputs":[{"name":"amount","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},
-{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer",
-"outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":false,"inputs":[],"name":"start","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"address"}],"name":"allowance",
+"outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"target","type":"address"},{"name":"token_amount","type":"uint256"}],"name":"redeem","outputs":[{"name":"amount","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},
+{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],
+"name":"transferFrom","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_value","type":"uint256"}],"name":"burn","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"sellPrice",
 "outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
-{"constant":false,"inputs":[{"name":"amount","type":"uint256"}],"name":"sell",
-"outputs":[{"name":"revenue","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":false,"inputs":[],"name":"giveBlockReward","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},
-{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},
-{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},
-{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_spender","type":"address"},
-{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}];
-
-
-var ATHA_CONTRACT_ADDRESS_TEST = '0x9e26750041f442f13748b181596a88E72338Cd90';
-const ATHA_ABI_TEST = [{"constant":false,"inputs":[{"name":"newSellPrice","type":"uint256"},{"name":"newBuyPrice","type":"uint256"}],
-"name":"setPrices","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
-{"constant":false,"inputs":[],"name":"stop","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],
-"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],
-"payable":false,"stateMutability":"view","type":"function"},
-{"constant":false,"inputs":[{"name":"target","type":"address"},{"name":"token_amount","type":"uint256"}],"name":"redeem","outputs":[{"name":"amount","type":"uint256"}],
-"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},
-{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
-{"constant":false,"inputs":[{"name":"_value","type":"uint256"}],"name":"burn","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":true,"inputs":[],"name":"sellPrice","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
-{"constant":true,"inputs":[],"name":"version","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":false,"inputs":[{"name":"target_address","type":"address"},{"name":"token_amount","type":"uint256"}],
+"name":"redeem_withdraw","outputs":[{"name":"amount","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":false,"inputs":[{"name":"_redeemer","type":"address"}],"name":"changeRedeemer","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
 {"constant":true,"inputs":[{"name":"","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
 {"constant":true,"inputs":[],"name":"stopped","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},
 {"constant":false,"inputs":[{"name":"target","type":"address"},{"name":"mintedAmount","type":"uint256"}],
@@ -73,17 +37,58 @@ const ATHA_ABI_TEST = [{"constant":false,"inputs":[{"name":"newSellPrice","type"
 {"constant":true,"inputs":[],"name":"buyPrice","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
 {"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
 {"constant":false,"inputs":[],"name":"buy","outputs":[{"name":"amount","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},
-{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],
-"name":"transfer","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"success","type":"bool"}],
+"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"start","outputs":[],
+"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},
+{"name":"","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":false,"inputs":[{"name":"amount","type":"uint256"}],"name":"sell",
+"outputs":[{"name":"revenue","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":false,"inputs":[{"name":"token_amount","type":"uint256"}],"name":"redeem_deposit","outputs":[{"name":"amount","type":"uint256"}],
+"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[],
+"name":"giveBlockReward","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},
+{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},
+{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],
+"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},
+{"indexed":true,"name":"_spender","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}];
+
+
+var ATHA_CONTRACT_ADDRESS_TEST = '0x6DEC27bFb419913f7B7b2a613E36Ca350D0EFA8C';
+const ATHA_ABI_TEST = [{"constant":false,"inputs":[{"name":"newSellPrice","type":"uint256"},{"name":"newBuyPrice","type":"uint256"}],"name":"setPrices","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":false,"inputs":[],"name":"stop","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],
+"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply",
+"outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":false,"inputs":[{"name":"target","type":"address"},{"name":"token_amount","type":"uint256"}],"name":"redeem","outputs":[{"name":"amount","type":"uint256"}],
+"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},
+{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"success","type":"bool"}],
+"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint256"}],
+"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_value","type":"uint256"}],"name":"burn","outputs":[],
+"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"sellPrice","outputs":[{"name":"","type":"uint256"}],
+"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"target_address","type":"address"},
+{"name":"token_amount","type":"uint256"}],"name":"redeem_withdraw","outputs":[{"name":"amount","type":"uint256"}],
+"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_redeemer","type":"address"}],
+"name":"changeRedeemer","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":true,"inputs":[],"name":"stopped","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":false,"inputs":[{"name":"target","type":"address"},{"name":"mintedAmount","type":"uint256"}],"name":"mintToken","outputs":[],
+"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"buyPrice",
+"outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":false,"inputs":[],"name":"buy","outputs":[{"name":"amount","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},
+{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer",
+"outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
 {"constant":false,"inputs":[],"name":"start","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
 {"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],
 "payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"amount","type":"uint256"}],"name":"sell",
 "outputs":[{"name":"revenue","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":false,"inputs":[],"name":"giveBlockReward","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},
-{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},
-{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_spender","type":"address"},
-{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}];
+{"constant":false,"inputs":[{"name":"token_amount","type":"uint256"}],"name":"redeem_deposit","outputs":[{"name":"amount","type":"uint256"}],
+"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[],"name":"giveBlockReward","outputs":[],
+"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},
+{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"},
+{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},
+{"indexed":true,"name":"_spender","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}];
 
 
 function makeid() {
@@ -1263,48 +1268,135 @@ module.exports = (express) => {
 			});
 		}
 	});
+
+	// router.post('/give_redeem', (req, res) => {
+	// 	var data = req.body; // maybe more carefully assemble this data
+	// 	console.log('api_key', data.api_key);
+	// 	if (data.api_key == API_KEY){
+	// 		var api = 'https://api.blockcypher.com/v1/eth/main/addrs';
+	// 		request.post(api, function (error, response, wallet) {
+	// 			var wallet_data = JSON.parse(wallet);
+	// 			console.log(wallet_data);
+	// 			console.log('private', wallet_data.private);
+	// 			console.log('address', wallet_data.address);
+	// 			var query = connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.user_id], (err, rows, fields) => {
+	// 				if (err) console.error(err);
+	// 				console.log('rows', rows.length);
+	// 				if (rows.length == 1){
+	// 					send_eth(wallet_data['address'], 0.000325, rows[0].private_key);
+	// 					address = rows[0].wallet_address;
+	// 					var ethers = require('ethers');
+	// 					var targetAddress = ethers.utils.getAddress(wallet_data['address']);
+	// 					myWallet = new ethers.Wallet('0x'+rows[0].private_key);
+	// 					var providers = ethers.providers;
+	// 					var provider = new providers.getDefaultProvider(providers.networks.mainnet);
+	// 					myWallet.provider = provider;
+	// 					tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
+	//
+	// 					var atha_amount = data.atha_amount * 102 / 100;
+	// 					console.log('atha_amount', atha_amount);
+	// 					var amount = atha_amount;
+	// 					console.log('amount', amount.toString());
+	// 					console.log('eth_amount', data.eth_amount);
+	// 					provider.getGasPrice().then(function(gasPrice) {
+	//
+	// 						console.log('gasPrice', ethers.utils.bigNumberify(gasPrice).toString());
+	// 						tokenContract.functions.redeem(targetAddress, amount, {
+	// 							value: ethers.utils.parseEther(data.eth_amount),
+	// 							gasPrice: gasPrice,
+	// 							gasLimit: 65000,
+	// 						}).then(function(txid, err) {
+	// 							if (!err){
+	// 										var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
+	// 										var redeem_code = makeRedeemCode();
+	// 										connection.query('INSERT INTO mobile_redeems (title, description, redeem_code, redeem_date, target_address, private_key, amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+	// 										[ data.title, data.description,redeem_code,CURRENT_TIMESTAMP, wallet_data.address, wallet_data.private, data.atha_amount, 'opened', data.user_id, CURRENT_TIMESTAMP ],
+	// 										(err, results) => {
+	// 											if(err){
+	// 												console.error(err);
+	// 												res.jsonp({
+	// 													status: 'failed',
+	// 													message: 'Database cannot accept it!',
+	// 													res:txid
+	// 												});
+	// 											} else {
+	// 												res.jsonp({
+	// 													status: 'success',
+	// 													message: 'SUCCESSFULLY MADE',
+	// 													res:txid
+	// 												});
+	// 											}
+	// 										});
+	// 							} else {
+	// 								res.jsonp({
+	// 									status: 'failed',
+	// 									message: 'transaction failed',
+	// 									res:err
+	// 								});
+	// 							}
+	// 						})
+	// 						.catch(function(err){
+	// 							console.log(err);
+	// 							res.jsonp({
+	// 								status: 'failed',
+	// 								message: 'Failed in Transfer',
+	// 								res:err
+	// 							});
+	// 							console.log(err);
+	// 						});
+	// 					});
+	// 				} else {
+	// 					res.jsonp({
+	// 						status: 'failed',
+	// 						message: 'incorret user_id'
+	// 					});
+	// 				}
+	// 			});
+	// 		});
+	// 	} else {
+	// 		res.jsonp({
+	// 			status: 'failed',
+	// 			message: 'API KEY IS INVALID',
+	// 		});
+	// 	}
+	// });
+
 	router.post('/give_redeem', (req, res) => {
 		var data = req.body; // maybe more carefully assemble this data
 		console.log('api_key', data.api_key);
 		if (data.api_key == API_KEY){
-			var api = 'https://api.blockcypher.com/v1/eth/main/addrs';
-			request.post(api, function (error, response, wallet) {
-				var wallet_data = JSON.parse(wallet);
-				console.log(wallet_data);
-				console.log('private', wallet_data.private);
-				console.log('address', wallet_data.address);
 				var query = connection.query('SELECT * FROM tbl_fans WHERE id=?', [data.user_id], (err, rows, fields) => {
 					if (err) console.error(err);
 					console.log('rows', rows.length);
 					if (rows.length == 1){
-						send_eth(wallet_data['address'], 0.000325, rows[0].private_key);
 						address = rows[0].wallet_address;
 						var ethers = require('ethers');
-						var targetAddress = ethers.utils.getAddress(wallet_data['address']);
 						myWallet = new ethers.Wallet('0x'+rows[0].private_key);
 						var providers = ethers.providers;
-						var provider = new providers.getDefaultProvider(providers.networks.mainnet);
+						var provider = new providers.getDefaultProvider(providers.networks.ropsten);
 						myWallet.provider = provider;
 						tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
-
 						var atha_amount = data.atha_amount * 102 / 100;
-						console.log('atha_amount', atha_amount);
-						var amount = atha_amount;
-						console.log('amount', amount.toString());
-						console.log('eth_amount', data.eth_amount);
-						provider.getGasPrice().then(function(gasPrice) {
 
-							console.log('gasPrice', ethers.utils.bigNumberify(gasPrice).toString());
-							tokenContract.functions.redeem(targetAddress, amount, {
-								value: ethers.utils.parseEther(data.eth_amount),
+						provider.getGasPrice().then(function(gasPrice) {
+							var gas = ethers.utils.bigNumberify(gasPrice).mul(ethers.utils.bigNumberify(65000));
+							console.log(gas);
+							console.log(data.eth_amount.toString());
+							eth_amount = ethers.utils.parseEther(data.eth_amount.toString());
+							console.log(eth_amount.toString());
+							eth_amount = gas.add(eth_amount);
+							console.log('atha', atha_amount, eth_amount.toString());
+							tokenContract.functions.redeem_deposit(atha_amount, {
+								value: ethers.utils.parseEther('0.00179'),
 								gasPrice: gasPrice,
-								gasLimit: 65000,
+								gasLimit: 100000,
 							}).then(function(txid, err) {
 								if (!err){
 											var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
 											var redeem_code = makeRedeemCode();
+											console.log(txid);
 											connection.query('INSERT INTO mobile_redeems (title, description, redeem_code, redeem_date, target_address, private_key, amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-											[ data.title, data.description,redeem_code,CURRENT_TIMESTAMP, wallet_data.address, wallet_data.private, data.atha_amount, 'opened', data.user_id, CURRENT_TIMESTAMP ],
+											[ data.title, data.description,redeem_code,CURRENT_TIMESTAMP, '', '', data.atha_amount, 'opened', data.user_id, CURRENT_TIMESTAMP ],
 											(err, results) => {
 												if(err){
 													console.error(err);
@@ -1346,7 +1438,7 @@ module.exports = (express) => {
 						});
 					}
 				});
-			});
+
 		} else {
 			res.jsonp({
 				status: 'failed',
@@ -1354,6 +1446,7 @@ module.exports = (express) => {
 			});
 		}
 	});
+
 
 	router.post('/sent_redeems', (req, res) => {
 		var data = req.body; // maybe more carefully assemble this data
@@ -1426,45 +1519,35 @@ module.exports = (express) => {
 							console.log('rows', rows.length);
 							if (rows.length == 1){
 								address = result_requests[0].target_address;
-
-
 								var ethers = require('ethers');
 								var targetAddress = ethers.utils.getAddress(rows[0].wallet_address);
-								var amount = ethers.utils.bigNumberify("1000000000000000000").mul(result_requests[0].amount);
-								myWallet = new ethers.Wallet('0x'+result_requests[0].private_key);
+								myWallet = new ethers.Wallet('0x'+redeemer_key);
 								var providers = ethers.providers;
-								var provider = ethers.providers.getDefaultProvider(providers.networks.mainnet);
+								var provider = ethers.providers.getDefaultProvider(providers.networks.ropsten);
 								myWallet.provider = provider;
 								tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
 								provider.getGasPrice().then(function(gasPrice) {
 									console.log('gasPrice', gasPrice);
-									provider.getBalance(address).then(function(balance) {
-										if (balance > 0){
-											tokenContract.functions.transfer(targetAddress, amount, {
-												gasPrice: gasPrice,
-												gasLimit: 60000,
-											}).then(function(txid) {
-												var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
-												connection.query('UPDATE mobile_redeems SET received_by = ?, status = ?, updated_at = ? WHERE id = ?', [data.user_id, 'closed', CURRENT_TIMESTAMP, result_requests[0].id], (err, results) => {
-													if(err){
-														console.error(err);
-													} else {
-														console.log(results);
-														result_requests[0].received_by = data.user_id;
-														result_requests[0].status = 'closed';
-														res.jsonp({
-															status: 'success',
-															message: 'SUCCESSFULLY REGISTERED.',
-															res: result_requests[0]
-														});
-													}
-												});
+									tokenContract.functions.redeem_withdraw(targetAddress, result_requests[0].amount, {
+										value: 0,
+										gasPrice: gasPrice,
+										gasLimit: 65000,
+									}).then(function(txid, err) {
+										if (!err){
+											connection.query('UPDATE mobile_redeems SET status = ? WHERE redeem_code=?', [data.redeem_code, 'closed'], (err, result) => {
+												if (!err){
+													res.jsonp({
+														status: 'success',
+														res: result,
+														message: 'successfully got redeem',
+													});
+												}
 											});
 										} else {
 											res.jsonp({
 												status: 'failed',
-												res: [],
-												message: 'No balance for transaction fee.',
+												res: err,
+												message: 'transaction failed'
 											});
 										}
 									});
