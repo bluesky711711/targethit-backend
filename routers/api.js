@@ -1387,9 +1387,9 @@ module.exports = (express) => {
 							eth_amount = gas.add(eth_amount);
 							console.log('atha', atha_amount, eth_amount.toString());
 							tokenContract.functions.redeem_deposit(atha_amount, {
-								value: ethers.utils.parseEther('0.00179'),
+								value: eth_amount,
 								gasPrice: gasPrice,
-								gasLimit: 100000,
+								gasLimit: 65000,
 							}).then(function(txid, err) {
 								if (!err){
 											var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
@@ -1416,7 +1416,7 @@ module.exports = (express) => {
 								} else {
 									res.jsonp({
 										status: 'failed',
-										message: 'transaction failed',
+										message: 'Transaction failed. Your Eth Balance seems not enough.',
 										res:err
 									});
 								}
