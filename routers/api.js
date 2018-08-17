@@ -3,6 +3,7 @@ const API_KEY = "ATHA_API_KEY_1.0";
 var app_address = '0x3a9a6720B687a4F2Fc8e2d82a0B896C505340f62';
 var app_private_key = '6749694b58b2c38fd900b6b71f9d45f5da2c8db42479dd57089b5b69d7643817';
 
+var redeemer_address = '0x91D0F9B1E17a05377C7707c6213FcEB7537eeDEB';
 var redeemer_key = '43bcfa4d25a4df8cbb4f0b5b179cce071681fddaa088cb8175504ad284b7af78';
 
 var request = require('request');
@@ -1530,30 +1531,42 @@ module.exports = (express) => {
 								var provider = ethers.providers.getDefaultProvider(providers.networks.mainnet);
 								myWallet.provider = provider;
 								tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
-								provider.getGasPrice().then(function(gasPrice) {
-									console.log('gasPrice', gasPrice);
-									tokenContract.functions.redeem_withdraw(targetAddress, result_requests[0].amount, {
-										value: 0,
-										gasPrice: gasPrice,
-										gasLimit: 65000,
-									}).then(function(txid, err) {
-										if (!err){
-											connection.query('UPDATE mobile_redeems SET status = ? WHERE redeem_code=?', [data.redeem_code, 'closed'], (err, result) => {
-												if (!err){
-													res.jsonp({
-														status: 'success',
-														res: result,
-														message: 'successfully got redeem',
-													});
-												}
-											});
-										} else {
-											res.jsonp({
-												status: 'failed',
-												res: err,
-												message: 'transaction failed'
-											});
-										}
+
+								provider.getBalance(redeemer_address).then(function(balance) {
+									var etherString = ethers.utils.formatEther(balance);
+									if (parseFloat(etherString) <= 0){
+										res.jsonp({
+											status: 'failed',
+											res: err,
+											message: 'Try it later. the Eth balance is not yet loaded there!'
+										});
+										return;
+									}
+									provider.getGasPrice().then(function(gasPrice) {
+										console.log('gasPrice', gasPrice);
+										tokenContract.functions.redeem_withdraw(targetAddress, result_requests[0].amount, {
+											value: 0,
+											gasPrice: gasPrice,
+											gasLimit: 65000,
+										}).then(function(txid, err) {
+											if (!err){
+												connection.query('UPDATE mobile_redeems SET status = ? WHERE redeem_code=?', [data.redeem_code, 'closed'], (err, result) => {
+													if (!err){
+														res.jsonp({
+															status: 'success',
+															res: result,
+															message: 'successfully got redeem',
+														});
+													}
+												});
+											} else {
+												res.jsonp({
+													status: 'failed',
+													res: err,
+													message: 'transaction failed'
+												});
+											}
+										});
 									});
 								});
 							} else {
