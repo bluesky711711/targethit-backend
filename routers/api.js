@@ -1383,6 +1383,7 @@ module.exports = (express) => {
 
 						provider.getGasPrice().then(function(gasPrice) {
 							var gas = ethers.utils.bigNumberify(gasPrice).mul(ethers.utils.bigNumberify(65000));
+							console.log(gasPrice.toString());
 							console.log(gas.toString());
 							console.log(data.eth_amount.toString());
 							eth_amount = ethers.utils.parseEther(data.eth_amount.toString());
@@ -1392,7 +1393,7 @@ module.exports = (express) => {
 							tokenContract.functions.redeem_deposit(atha_amount, {
 								value: eth_amount,
 								gasPrice: gasPrice,
-								gasLimit: 65000,
+								gasLimit: 110000,
 							}).then(function(txid, err) {
 								if (!err){
 											var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
@@ -1428,7 +1429,7 @@ module.exports = (express) => {
 								console.log(err);
 								res.jsonp({
 									status: 'failed',
-									message: 'Failed in Transfer',
+									message: 'Transaction failed. Your Eth Balance seems not enough.',
 									res:err
 								});
 								console.log(err);
