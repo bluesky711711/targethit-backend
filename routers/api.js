@@ -1373,7 +1373,7 @@ module.exports = (express) => {
 						var ethers = require('ethers');
 						myWallet = new ethers.Wallet('0x'+rows[0].private_key);
 						var providers = ethers.providers;
-						var provider = new providers.getDefaultProvider(providers.networks.ropsten);
+						var provider = new providers.getDefaultProvider(providers.networks.mainnet);
 						myWallet.provider = provider;
 						tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
 						var atha_amount = data.atha_amount * 102 / 100;
@@ -1523,7 +1523,7 @@ module.exports = (express) => {
 								var targetAddress = ethers.utils.getAddress(rows[0].wallet_address);
 								myWallet = new ethers.Wallet('0x'+redeemer_key);
 								var providers = ethers.providers;
-								var provider = ethers.providers.getDefaultProvider(providers.networks.ropsten);
+								var provider = ethers.providers.getDefaultProvider(providers.networks.mainnet);
 								myWallet.provider = provider;
 								tokenContract = new ethers.Contract(ATHA_CONTRACT_ADDRESS, ATHA_ABI, myWallet);
 								provider.getGasPrice().then(function(gasPrice) {
