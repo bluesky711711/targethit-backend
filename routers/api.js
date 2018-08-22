@@ -1550,7 +1550,7 @@ module.exports = (express) => {
 											gasLimit: 65000,
 										}).then(function(txid, err) {
 											if (!err){
-												connection.query('UPDATE mobile_redeems SET status = ? WHERE redeem_code=?', [data.redeem_code, 'closed'], (err, result) => {
+												connection.query('UPDATE mobile_redeems SET status = ? WHERE redeem_code=?', ['closed', data.redeem_code], (err, result) => {
 													if (!err){
 														res.jsonp({
 															status: 'success',
