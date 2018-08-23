@@ -921,8 +921,8 @@ module.exports = (express) => {
 
 			// Connect to MySQL DB
 
-			query = 'SELECT tbl_participants.*, tbl_teams.TeamName as team, tbl_leagues.LeagueName as league FROM tbl_participants left join tbl_teams on tbl_teams.id = tbl_participants.team_id\
-			left join tbl_leagues on tbl_leagues.id = tbl_participants.league_id right join tbl_event_part on tbl_event_part.part_id = tbl_participants.id';
+			query = 'SELECT vw_partdisplaydata.*, tbl_teams.TeamName as team, tbl_leagues.LeagueName as league FROM vw_partdisplaydata left join tbl_teams on tbl_teams.id = vw_partdisplaydata.team_id\
+			left join tbl_leagues on tbl_leagues.id = vw_partdisplaydata.league_id right join tbl_event_part on tbl_event_part.part_id = vw_partdisplaydata.id';
 			query_where = '';
 			if (data.event_id != ''){
 				query_where = ' WHERE tbl_event_part.event_id = ' + data.event_id;
@@ -1550,7 +1550,8 @@ module.exports = (express) => {
 											gasLimit: 65000,
 										}).then(function(txid, err) {
 											if (!err){
-												connection.query('UPDATE mobile_redeems SET status = ? WHERE redeem_code=?', ['closed', data.redeem_code], (err, result) => {
+												var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
+												connection.query('UPDATE mobile_redeems SET status = ?, received_by = ?, updated_at = ? WHERE redeem_code=?', ['closed', data.user_id, CURRENT_TIMESTAMP, data.redeem_code], (err, result) => {
 													if (!err){
 														res.jsonp({
 															status: 'success',
