@@ -625,6 +625,7 @@ module.exports = (express) => {
 								events: event_logs
 							});
 						}
+						console.log('event_logs', event_logs);
 					});
 				} else {
 					res.jsonp({
@@ -745,7 +746,7 @@ module.exports = (express) => {
 					var provider = ethers.providers.getDefaultProvider(ethers.providers.networks.main);
 					provider.getGasPrice().then(function(gasPrice) {
 						gasPriceString = ethers.utils.formatEther(gasPrice, {pad: true});
-						gasfee = ethers.utils.formatEther(gasPrice*21000, {pad: true});
+						gasfee = ethers.utils.formatEther(gasPrice*65000, {pad: true});
 						console.log('getgasprice', gasPriceString);
 						console.log('gasfee', gasfee);
 						res.jsonp({
@@ -1421,7 +1422,7 @@ module.exports = (express) => {
 								} else {
 									res.jsonp({
 										status: 'failed',
-										message: 'You need more ETH to process this transaction.\n please add ETH to your wallet then try again!',
+										message: 'You need more ETH to process this transaction.',
 										res:err
 									});
 								}
@@ -1430,7 +1431,7 @@ module.exports = (express) => {
 								console.log(err);
 								res.jsonp({
 									status: 'failed',
-									message: 'You need more ETH to process this transaction.\n please add ETH to your wallet then try again!',
+									message: 'You need more ETH to process this transaction.',
 									res:err
 								});
 								console.log(err);
