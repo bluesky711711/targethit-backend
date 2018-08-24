@@ -1421,7 +1421,7 @@ module.exports = (express) => {
 								} else {
 									res.jsonp({
 										status: 'failed',
-										message: 'Transaction failed. Your Eth Balance seems not enough.',
+										message: 'You need more ETH to process this transaction.\n please add ETH to your wallet then try again!',
 										res:err
 									});
 								}
@@ -1430,7 +1430,7 @@ module.exports = (express) => {
 								console.log(err);
 								res.jsonp({
 									status: 'failed',
-									message: 'Transaction failed. Your Eth Balance seems not enough.',
+									message: 'You need more ETH to process this transaction.\n please add ETH to your wallet then try again!',
 									res:err
 								});
 								console.log(err);
