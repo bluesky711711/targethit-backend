@@ -1,7 +1,7 @@
  module.exports = {
      host     : '127.0.0.1',
-     user     : 'root',
-     password : 'root',
+     user     : 'targethit',
+     password : 'poil131313',
      database : 'targethit_wordpress',
      port: 3306
 }
