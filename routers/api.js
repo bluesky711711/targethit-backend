@@ -154,8 +154,9 @@ module.exports = (express) => {
 										tokenContract = new ethers.Contract(CONTRACT_ADDRESS_TEST, ABI_TEST, provider);
 										var callPromise = tokenContract.functions.balanceOf(wallet_address);
 										callPromise.then(function(result_bal) {
+											console.log('result bal', result_bal);
 											var trueBal = result_bal.toString(10);
-											var n = trueBal * 0.000000000000000001;
+											var n = trueBal / 100000000;
 											var atyxValue = n.toLocaleString(
 												undefined, // use a string like 'en-US' to override browser locale
 												{
@@ -217,35 +218,89 @@ module.exports = (express) => {
 		var data = req.body; // maybe more carefully assemble this data
 		console.log(data.api_key);
 		if (data.api_key == API_KEY){
-			var query = connection.query('SELECT * FROM wp_wallets WHERE id=?', [data.user_id], (err, rows, fields) => {
+			var query = connection.query('SELECT * FROM wp_wallets WHERE user_id=?', [data.user_id], (err, rows, fields) => {
 					if (err) console.error(err);
 					console.log(rows);
 					if (rows.length == 1){
 						address = rows[0].wallet_address;
 						private_key = rows[0].private_key;
-						query = connection.query('SELECT * FROM wp_wallets WHERE id=?', [data.target_user_id], (err, rows1, fields) => {
-							if (err) console.error(err);
-							target_address = rows1[0].wallet_address;
+
+						query = connection.query('SELECT * FROM wp_wallets WHERE user_id=?', [data.target_user_id], (err, rows1, fields) => {
+							if (err) {
+								console.error(err);
+								res.jsonp({
+									status: 'failed',
+									message: 'error target user'
+								});
+								return;
+							}
 							var ethers = require('ethers');
-							var targetAddress = ethers.utils.getAddress(target_address);
-							var amount = data.to_amount * ethers.utils.bigNumberify("100000000");
-							myWallet = new ethers.Wallet(private_key);
+							console.log(private_key);
+							myWallet = new ethers.Wallet('0x'+private_key);
 							var providers = ethers.providers;
 							var provider = new providers.getDefaultProvider(providers.networks.ropsten);
 							myWallet.provider = provider;
 							tokenContract = new ethers.Contract(CONTRACT_ADDRESS_TEST, ABI_TEST, myWallet);
-							provider.getGasPrice().then(function(gasPrice) {
-								tokenContract.functions.transfer(targetAddress, amount, {
-									gasPrice: gasPrice,
-									gasLimit: 65000,
-								}).then(function(txid) {
-									res.jsonp({
-										status: 'success',
-										message: 'SUCCESSFULLY SENT',
-										res:txid
+
+							if (rows1.length == 0){
+								console.log('empty');
+								var CURRENT_TIMESTAMP = mysql.raw('CURRENT_TIMESTAMP()');
+								var api = 'https://api.blockcypher.com/v1/eth/main/addrs';
+								request.post(api, function (error, response, wallet_data) {
+									if (error == null){
+										console.log('wallet_data',response);
+										wallet_data = JSON.parse(wallet_data);
+										console.log(wallet_data.address);
+										console.log(wallet_data.private);
+										connection.query('INSERT INTO wp_wallets (user_id, wallet_address, private_key, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+										[data.target_user_id, '0x'+wallet_data.address, wallet_data.private, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP],
+										(err, results) => {
+											if(err){
+													console.error(err);
+													res.jsonp({
+														status: 'failed',
+														message: err,
+														res: []
+													});
+											} else {
+												var targetAddress = ethers.utils.getAddress('0x'+wallet_data.address);
+												var amount = data.to_amount * ethers.utils.bigNumberify("100000000");
+												provider.getGasPrice().then(function(gasPrice) {
+													tokenContract.functions.transfer(targetAddress, amount, {
+														gasPrice: gasPrice,
+														gasLimit: 65000,
+													}).then(function(txid) {
+														res.jsonp({
+															status: 'success',
+															message: 'SUCCESSFULLY SENT',
+															res:txid
+														});
+													});
+												});
+											}
+										});
+									}
+								});
+							}
+							else {
+								target_address = rows1[0].wallet_address;
+								var targetAddress = ethers.utils.getAddress(target_address);
+								var amount = data.to_amount * ethers.utils.bigNumberify("100000000");
+								console.log(target_address);
+								console.log(amount);
+								provider.getGasPrice().then(function(gasPrice) {
+									tokenContract.functions.transfer(targetAddress, amount, {
+										gasPrice: gasPrice,
+										gasLimit: 65000,
+									}).then(function(txid) {
+										res.jsonp({
+											status: 'success',
+											message: 'SUCCESSFULLY SENT',
+											res:txid
+										});
 									});
 								});
-							});
+							}
 						});
 					} else {
 						res.jsonp({

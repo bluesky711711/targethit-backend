@@ -8,8 +8,8 @@
 
 // module.exports = {
 //     host     : '127.0.0.1',
-//     user     : 'athletic_redeem',
-//     password : '=$6W,4GzLGmt',
-//     database : 'athletic_redeem',
+//     user     : 'root',
+//     password : 'root',
+//     database : 'targethit_wordpress',
 //     port: 3306
 // }
