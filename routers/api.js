@@ -13,43 +13,31 @@ try{
 connection  = mysql.createConnection(credentials);
 
 
-var CONTRACT_ADDRESS = '0x748850413d78Bd2f5189E8F5965cE060f7A9A3a9';
-const ATHA_ABI = [{"constant":false,"inputs":[{"name":"newSellPrice","type":"uint256"},{"name":"newBuyPrice","type":"uint256"}],
-"name":"setPrices","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
+var CONTRACT_ADDRESS = '0xc83d46e4d1E290Fa414a5775D90D5d50745c3281';
+const ABI = [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
 {"constant":false,"inputs":[],"name":"stop","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
 {"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],
 "payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],
-"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"target","type":"address"},{"name":"token_amount","type":"uint256"}],
-"name":"redeem","outputs":[{"name":"amount","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},
-{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],
-"name":"transferFrom","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
-{"constant":false,"inputs":[{"name":"_value","type":"uint256"}],"name":"burn","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":true,"inputs":[],"name":"sellPrice","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
-{"constant":false,"inputs":[{"name":"target_address","type":"address"},{"name":"token_amount","type":"uint256"}],
-"name":"redeem_withdraw","outputs":[{"name":"amount","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":false,"inputs":[{"name":"_redeemer","type":"address"}],"name":"changeRedeemer","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
-{"constant":true,"inputs":[],"name":"stopped","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},
-{"constant":false,"inputs":[{"name":"target","type":"address"},{"name":"mintedAmount","type":"uint256"}],
-"name":"mintToken","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":true,"inputs":[],"name":"buyPrice","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
+"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint256"}],
+"payable":false,"stateMutability":"view","type":"function"},
+{"constant":true,"inputs":[],"name":"version","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":true,"inputs":[],"name":"GetPrice","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],
+"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"stopped","outputs":[{"name":"","type":"bool"}],
+"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_amounts","type":"uint256[]"},
+{"name":"_recipient","type":"address[]"}],"name":"deployTokens","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
 {"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":true,"inputs":[],"name":"price","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
+{"constant":false,"inputs":[{"name":"newPrice","type":"uint256"}],"name":"setPrices","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
 {"constant":false,"inputs":[],"name":"buy","outputs":[{"name":"amount","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},
-{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer",
-"outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":false,"inputs":[],"name":"start","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":false,"inputs":[{"name":"_newaddress","type":"address"}],"name":"changeOwner","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
+{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"success","type":"bool"}],
+"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"start","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
 {"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],
-"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"amount","type":"uint256"}],"name":"sell",
-"outputs":[{"name":"revenue","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"constant":false,"inputs":[{"name":"token_amount","type":"uint256"}],"name":"redeem_deposit","outputs":[{"name":"amount","type":"uint256"}],
-"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[],"name":"giveBlockReward","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
-{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},
+"payable":false,"stateMutability":"view","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},
 {"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"},
-{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},
-{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_spender","type":"address"},
-{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}];
+{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},
+{"indexed":true,"name":"_spender","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}];
 
 
 var CONTRACT_ADDRESS_TEST = '0x7C00D9B41c580d09B37fa76bdc0f6A93B9e439Fb';
@@ -151,7 +139,7 @@ module.exports = (express) => {
 									var provider = new providers.getDefaultProvider(providers.networks.ropsten);
 									provider.getBalance(wallet_address).then(function(balance) {
 										var etherString = ethers.utils.formatEther(balance);
-										tokenContract = new ethers.Contract(CONTRACT_ADDRESS_TEST, ABI_TEST, provider);
+										tokenContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
 										var callPromise = tokenContract.functions.balanceOf(wallet_address);
 										callPromise.then(function(result_bal) {
 											console.log('result bal', result_bal);
@@ -240,7 +228,7 @@ module.exports = (express) => {
 							var providers = ethers.providers;
 							var provider = new providers.getDefaultProvider(providers.networks.ropsten);
 							myWallet.provider = provider;
-							tokenContract = new ethers.Contract(CONTRACT_ADDRESS_TEST, ABI_TEST, myWallet);
+							tokenContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, myWallet);
 
 							if (rows1.length == 0){
 								console.log('empty');
