@@ -136,7 +136,7 @@ module.exports = (express) => {
 									wallet_address = rows[0].wallet_address;
 									var ethers = require('ethers');
 									var providers = ethers.providers;
-									var provider = new providers.getDefaultProvider(providers.networks.ropsten);
+									var provider = new providers.getDefaultProvider(providers.networks.mainnet);
 									provider.getBalance(wallet_address).then(function(balance) {
 										var etherString = ethers.utils.formatEther(balance);
 										tokenContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
@@ -226,7 +226,7 @@ module.exports = (express) => {
 							console.log(private_key);
 							myWallet = new ethers.Wallet('0x'+private_key);
 							var providers = ethers.providers;
-							var provider = new providers.getDefaultProvider(providers.networks.ropsten);
+							var provider = new providers.getDefaultProvider(providers.networks.mainnet);
 							myWallet.provider = provider;
 							tokenContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, myWallet);
 
@@ -312,7 +312,7 @@ module.exports = (express) => {
 				if (rows.length > 0){
 					address = rows[0].wallet_address;
 					var ethers = require('ethers');
-					var provider = ethers.providers.getDefaultProvider(ethers.providers.networks.ropsten);
+					var provider = ethers.providers.getDefaultProvider(ethers.providers.networks.mainnet);
 					provider.getGasPrice().then(function(gasPrice) {
 						gasPriceString = ethers.utils.formatEther(gasPrice, {pad: true});
 						gasfee = ethers.utils.formatEther(gasPrice*65000, {pad: true});
