@@ -1,5 +1,5 @@
 //Dependencies - Express 4.x and the MySQL Connection
-const API_KEY = "TARGETHIT_API_KEY_1.0";
+const API_KEY = "TARGETHIT_API_KEY_ENCRYPTED_1.0";
 
 var request = require('request');
 var mysql       = require('mysql');
@@ -99,22 +99,87 @@ module.exports = (express) => {
 	});
 
 	// Simple MySQL Test
-	router.get('/test', (req, res) => {
+	router.post('/testencryption', (req, res) => {
 		var test;
-		// Setup MySQL Connection
-
-		// Connect to MySQL DB
-
-		connection.query('SELECT 1 + 1 AS solution', (err, rows, fields) => {
+		var data = req.body; // maybe more carefully assemble this data
+		console.log(data.api_key);
+		connection.query('SELECT * FROM wp_wallets', (err, rows, fields) => {
 			if (err) {
 				throw err;
 			}
+			Cryptr = require('Cryptr');
+			const cryptr = new Cryptr('targethit.com');
+			if (rows.length > 0){
+				for (i in rows){
+					console.log(rows);
+					private_key = rows[i].private_key;
+					console.log('private_key', private_key);
+					const encryptedString = cryptr.encrypt(private_key);
+					console.log('encryptedString', encryptedString);
+					count = 0;
+					connection.query('UPDATE wp_wallets SET private_key=? WHERE user_id=?', [encryptedString, rows[i].user_id], (err, result) => {
+						if (err) {
+							console.log(err);
+							res.jsonp({
+								status: 'failed',
+								message: 'Mysql Query.',
+								res: []
+							});
+						} else {
+							count++;
+							if (count == rows.length) {
+								res.jsonp({
+									status: 'success',
+									message: 'Success.',
+									res: result
+								});
+							}
+						}
+					});
+				}
+			}
+		});
+	});
 
-			test = rows[0].solution;
-
-			res.jsonp({
-				'test': test
-			});
+	router.post('/testdecryption', (req, res) => {
+		var test;
+		var data = req.body; // maybe more carefully assemble this data
+		console.log(data.api_key);
+		connection.query('SELECT * FROM wp_wallets', (err, rows, fields) => {
+			if (err) {
+				throw err;
+			}
+			Cryptr = require('Cryptr');
+			const cryptr = new Cryptr('targethit.com');
+			if (rows.length > 0){
+				for (i in rows){
+					console.log(rows);
+					private_key = rows[i].private_key;
+					console.log('private_key', private_key);
+					const decryptedString = cryptr.decrypt(private_key);
+					console.log('decryptedString', decryptedString);
+					count = 0;
+					connection.query('UPDATE wp_wallets SET private_key=? WHERE user_id=?', [decryptedString, rows[i].user_id], (err, result) => {
+						if (err) {
+							console.log(err);
+							res.jsonp({
+								status: 'failed',
+								message: 'Mysql Query.',
+								res: []
+							});
+						} else {
+							count++;
+							if (count == rows.length) {
+								res.jsonp({
+									status: 'success',
+									message: 'Success.',
+									res: result
+								});
+							}
+						}
+					});
+				}
+			}
 		});
 	});
 
@@ -175,8 +240,11 @@ module.exports = (express) => {
 											wallet_data = JSON.parse(wallet_data);
 											console.log(wallet_data.address);
 											console.log(wallet_data.private);
+											Cryptr = require('Cryptr');
+											const cryptr = new Cryptr('targethit.com');
+											private_key = cryptr.encrypt(wallet_data.private);
 											connection.query('INSERT INTO wp_wallets (user_id, wallet_address, private_key, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
-											[data.user_id, '0x'+wallet_data.address, wallet_data.private, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP],
+											[data.user_id, '0x'+wallet_data.address, private_key, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP],
 											(err, results) => {
 												if(err){
 														console.error(err);
@@ -211,7 +279,9 @@ module.exports = (express) => {
 					console.log(rows);
 					if (rows.length == 1){
 						address = rows[0].wallet_address;
-						private_key = rows[0].private_key;
+						Cryptr = require('Cryptr');
+						const cryptr = new Cryptr('targethit.com');
+						private_key = cryptr.decrypt(rows[0].private_key);
 
 						query = connection.query('SELECT * FROM wp_wallets WHERE user_id=?', [data.target_user_id], (err, rows1, fields) => {
 							if (err) {
@@ -240,8 +310,9 @@ module.exports = (express) => {
 										wallet_data = JSON.parse(wallet_data);
 										console.log(wallet_data.address);
 										console.log(wallet_data.private);
+										private_key = cryptr.encrypt(wallet_data.private);
 										connection.query('INSERT INTO wp_wallets (user_id, wallet_address, private_key, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
-										[data.target_user_id, '0x'+wallet_data.address, wallet_data.private, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP],
+										[data.target_user_id, '0x'+wallet_data.address, private_key, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP],
 										(err, results) => {
 											if(err){
 													console.error(err);
@@ -343,21 +414,21 @@ module.exports = (express) => {
 		}
 	});
 
-	router.post('/testwebsocket', (req, res) => {
-		var WebSocket = require('rpc-websockets').Client;
-		var ws = new WebSocket('ws://35.176.179.27:8090/');
-		ws.on('open', function() {
-  		// call an RPC method with parameters
-  		ws.call('server.time', []).then(function(result) {
-				ws.close();
-    		console.log('server.time:', result);
-				res.jsonp({
-					status: 'success',
-					message: 'called',
-				});
-  		})
-		});
-	});
+	// router.post('/testwebsocket', (req, res) => {
+	// 	var WebSocket = require('rpc-websockets').Client;
+	// 	var ws = new WebSocket('ws://35.176.179.27:8090/');
+	// 	ws.on('open', function() {
+  // 		// call an RPC method with parameters
+  // 		ws.call('server.time', []).then(function(result) {
+	// 			ws.close();
+  //   		console.log('server.time:', result);
+	// 			res.jsonp({
+	// 				status: 'success',
+	// 				message: 'called',
+	// 			});
+  // 		})
+	// 	});
+	// });
 
 	// router.post('/resetpassword', (req, res) => {
 	// 	var data = req.body; // maybe more carefully assemble this data

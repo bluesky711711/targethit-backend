@@ -12,6 +12,7 @@
   "private": true,
   "dependencies": {
     "body-parser": "^1.15.2",
+    "cryptr": "^4.0.0",
     "ejs": "^2.5.2",
     "ether": "0.0.9",
     "ethers": "^3.0.21",
