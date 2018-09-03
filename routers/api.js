@@ -107,7 +107,7 @@ module.exports = (express) => {
 			if (err) {
 				throw err;
 			}
-			Cryptr = require('Cryptr');
+			Cryptr = require('cryptr');
 			const cryptr = new Cryptr('targethit.com');
 			if (rows.length > 0){
 				for (i in rows){
@@ -149,7 +149,7 @@ module.exports = (express) => {
 			if (err) {
 				throw err;
 			}
-			Cryptr = require('Cryptr');
+			Cryptr = require('cryptr');
 			const cryptr = new Cryptr('targethit.com');
 			if (rows.length > 0){
 				for (i in rows){
@@ -240,7 +240,7 @@ module.exports = (express) => {
 											wallet_data = JSON.parse(wallet_data);
 											console.log(wallet_data.address);
 											console.log(wallet_data.private);
-											Cryptr = require('Cryptr');
+											Cryptr = require('cryptr');
 											const cryptr = new Cryptr('targethit.com');
 											private_key = cryptr.encrypt(wallet_data.private);
 											connection.query('INSERT INTO wp_wallets (user_id, wallet_address, private_key, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
@@ -279,7 +279,7 @@ module.exports = (express) => {
 					console.log(rows);
 					if (rows.length == 1){
 						address = rows[0].wallet_address;
-						Cryptr = require('Cryptr');
+						Cryptr = require('cryptr');
 						const cryptr = new Cryptr('targethit.com');
 						private_key = cryptr.decrypt(rows[0].private_key);
 
